@@ -1,0 +1,10 @@
+{
+  "name": "dorm-rent-app",
+  "version": "1.0.0",
+  "description": "Dormitory rent payment form web app (HTML + Tailwind + Neon + Netlify)",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4"
+  }
+}

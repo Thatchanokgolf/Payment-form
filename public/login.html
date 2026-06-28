@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign in — Dorm Rent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/auth.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex items-center justify-center px-4">
+  <div class="w-full max-w-sm">
+    <div class="bg-white rounded-2xl shadow-sm p-7">
+      <h1 class="text-xl font-bold mb-1">🏠 Dorm Rent</h1>
+      <p class="text-sm text-slate-500 mb-6">Sign in to continue</p>
+
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">ID</label>
+          <input id="uid" required autocomplete="username"
+                 class="w-full border rounded-lg px-3 py-2" placeholder="Admin / 201 / 2201" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Password</label>
+          <input id="pw" type="password" required autocomplete="current-password"
+                 class="w-full border rounded-lg px-3 py-2" placeholder="••••" />
+        </div>
+        <button type="submit"
+                class="w-full bg-slate-900 hover:bg-slate-700 text-white font-semibold py-2.5 rounded-xl">
+          Sign in
+        </button>
+        <p id="error" class="text-sm text-red-600 hidden">Invalid ID or password.</p>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const form = $('loginForm');
+    const btn = form.querySelector('button[type="submit"]');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      $('error').classList.add('hidden');
+      btn.disabled = true; btn.classList.add('opacity-60');
+      const ok = await window.DormAuth.login($('uid').value.trim(), $('pw').value);
+      if (ok) {
+        location.replace('/');
+      } else {
+        $('error').classList.remove('hidden');
+        $('pw').value = '';
+        btn.disabled = false; btn.classList.remove('opacity-60');
+      }
+    });
+  </script>
+</body>
+</html>

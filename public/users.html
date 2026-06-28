@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Users (Database 3)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/auth.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+  <nav class="bg-slate-900 text-white">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+      <span id="navHeading" class="font-semibold"></span>
+      <div class="flex items-center gap-4 text-sm">
+        <a href="/" class="hover:underline text-slate-300">Payment Form</a>
+        <a href="/rooms.html" class="nav-admin hover:underline text-slate-300">Rooms (DB1)</a>
+        <a href="/records.html" class="nav-admin hover:underline text-slate-300">Records (DB2)</a>
+        <a href="/users.html" class="nav-admin hover:underline font-medium">Users (DB3)</a>
+        <button id="logoutBtn" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1">Log out</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-1">User Management · Database 3</h1>
+    <p class="text-slate-500 mb-6 text-sm">Add or edit login accounts. Residents (role <em>user</em>) only see their own room; admins see everything.</p>
+
+    <form id="userForm" class="bg-white rounded-xl shadow-sm p-5 grid sm:grid-cols-2 gap-4 mb-8">
+      <div>
+        <label class="block text-sm font-medium mb-1">User ID</label>
+        <input id="user_id" required class="w-full border rounded-lg px-3 py-2" placeholder="201" />
+        <p class="text-xs text-slate-400 mt-1">Enter an existing ID to edit it.</p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Password</label>
+        <input id="password" type="text" class="w-full border rounded-lg px-3 py-2" placeholder="(leave blank to keep)" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Role</label>
+        <select id="role" class="w-full border rounded-lg px-3 py-2 bg-white">
+          <option value="user">user (resident)</option>
+          <option value="admin">admin</option>
+        </select>
+      </div>
+      <div id="roomWrap">
+        <label class="block text-sm font-medium mb-1">Room number</label>
+        <input id="room_number" class="w-full border rounded-lg px-3 py-2" placeholder="201" />
+        <p class="text-xs text-slate-400 mt-1">Residents only — ignored for admins.</p>
+      </div>
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium mb-1">Heading (shown top-left)</label>
+        <input id="heading" class="w-full border rounded-lg px-3 py-2" placeholder="Charal Prasit Lakeview" />
+      </div>
+      <div class="sm:col-span-2 flex items-center gap-3">
+        <button class="bg-slate-900 hover:bg-slate-700 text-white font-semibold px-6 py-2.5 rounded-xl">Save user</button>
+        <button type="button" id="clearBtn" class="text-sm text-slate-500 hover:underline">Clear</button>
+        <span id="status" class="text-sm"></span>
+      </div>
+    </form>
+
+    <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500 text-left">
+          <tr>
+            <th class="px-4 py-2">User ID</th>
+            <th class="px-4 py-2">Role</th>
+            <th class="px-4 py-2">Room</th>
+            <th class="px-4 py-2">Heading</th>
+            <th class="px-4 py-2"></th>
+          </tr>
+        </thead>
+        <tbody id="userRows"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const ME = (window.DormAuth && window.DormAuth.getSession() || {}).id || '';
+    let usersCache = [];
+
+    // Hide the room field when role is admin.
+    function syncRoomVisibility() {
+      $('roomWrap').classList.toggle('hidden', $('role').value === 'admin');
+    }
+    $('role').addEventListener('change', syncRoomVisibility);
+
+    async function loadUsers() {
+      const res = await fetch('/api/users?me=' + encodeURIComponent(ME));
+      const users = await res.json();
+      usersCache = Array.isArray(users) ? users : [];
+      const body = $('userRows');
+      body.innerHTML = '';
+      if (!usersCache.length) {
+        body.innerHTML = '<tr><td colspan="5" class="px-4 py-6 text-center text-slate-400">No users yet.</td></tr>';
+        return;
+      }
+      for (const u of usersCache) {
+        const tr = document.createElement('tr');
+        tr.className = 'border-t';
+        const roleBadge = u.role === 'admin'
+          ? '<span class="text-xs bg-amber-100 text-amber-700 rounded px-2 py-0.5">admin</span>'
+          : '<span class="text-xs bg-slate-100 text-slate-600 rounded px-2 py-0.5">user</span>';
+        tr.innerHTML = `
+          <td class="px-4 py-2 font-medium">${esc(u.user_id)}</td>
+          <td class="px-4 py-2">${roleBadge}</td>
+          <td class="px-4 py-2">${esc(u.room_number || '—')}</td>
+          <td class="px-4 py-2 text-xs">${esc(u.heading)}</td>
+          <td class="px-4 py-2 text-right whitespace-nowrap">
+            <button class="text-blue-600 hover:underline mr-3" data-edit="${esc(u.user_id)}">Edit</button>
+            <button class="text-red-600 hover:underline" data-del="${esc(u.user_id)}">Delete</button>
+          </td>`;
+        body.appendChild(tr);
+      }
+      body.querySelectorAll('[data-edit]').forEach((b) =>
+        b.addEventListener('click', () => fillForm(b.dataset.edit)));
+      body.querySelectorAll('[data-del]').forEach((b) =>
+        b.addEventListener('click', () => delUser(b.dataset.del)));
+    }
+
+    function fillForm(userId) {
+      const u = usersCache.find((x) => String(x.user_id) === String(userId));
+      if (!u) return;
+      $('user_id').value = u.user_id;
+      $('password').value = '';
+      $('role').value = u.role;
+      $('room_number').value = u.room_number || '';
+      $('heading').value = u.heading || '';
+      syncRoomVisibility();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Auto-load existing user data when an ID is entered.
+    function onUserIdEntered() {
+      const id = $('user_id').value.trim();
+      if (!id) { $('status').textContent = ''; return; }
+      const u = usersCache.find((x) => String(x.user_id) === id);
+      if (u) {
+        $('password').value = '';
+        $('role').value = u.role;
+        $('room_number').value = u.room_number || '';
+        $('heading').value = u.heading || '';
+        syncRoomVisibility();
+        $('status').innerHTML = '<span class="text-blue-600">Existing user loaded — editing.</span>';
+      } else {
+        $('status').innerHTML = '<span class="text-slate-400">New user.</span>';
+      }
+    }
+    $('user_id').addEventListener('change', onUserIdEntered);
+
+    function clearForm() {
+      $('userForm').reset();
+      syncRoomVisibility();
+      $('status').textContent = '';
+    }
+    $('clearBtn').addEventListener('click', clearForm);
+
+    async function delUser(userId) {
+      if (!confirm(`Delete user ${userId}?`)) return;
+      const res = await fetch('/api/users', {
+        method: 'DELETE',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, me: ME }),
+      });
+      const data = await res.json();
+      if (!res.ok) { $('status').innerHTML = `<span class="text-red-600">${esc(data.error)}</span>`; return; }
+      loadUsers();
+    }
+
+    // Enter must not auto-save — saving only via the Save button.
+    $('userForm').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+        e.preventDefault();
+        e.target.blur();
+      }
+    });
+
+    $('userForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      $('status').textContent = 'Saving…';
+      const payload = {
+        me: ME,
+        user_id: $('user_id').value.trim(),
+        password: $('password').value,
+        role: $('role').value,
+        room_number: $('room_number').value.trim(),
+        heading: $('heading').value.trim(),
+      };
+      try {
+        const res = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed');
+        $('status').innerHTML = '<span class="text-emerald-600">Saved ✓</span>';
+        clearForm();
+        loadUsers();
+      } catch (err) {
+        $('status').innerHTML = `<span class="text-red-600">${esc(err.message)}</span>`;
+      }
+    });
+
+    syncRoomVisibility();
+    loadUsers();
+  </script>
+</body>
+</html>

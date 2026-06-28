@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dormitory Rent — Payment Form</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/auth.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+  <!-- Nav -->
+  <nav class="bg-slate-900 text-white">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+      <span id="navHeading" class="font-semibold"></span>
+      <div class="flex items-center gap-4 text-sm">
+        <a href="/" class="hover:underline font-medium">Payment Form</a>
+        <a href="/rooms.html" class="nav-admin hover:underline text-slate-300">Rooms (DB1)</a>
+        <a href="/records.html" class="nav-admin hover:underline text-slate-300">Records (DB2)</a>
+        <a href="/users.html" class="nav-admin hover:underline text-slate-300">Users (DB3)</a>
+        <button id="logoutBtn" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1">Log out</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-1">Monthly Payment Form</h1>
+    <p class="text-slate-500 mb-6 text-sm">Electricity = (meter difference) × 8 · Water = (meter difference) × 20</p>
+
+    <form id="billForm" class="space-y-6">
+      <!-- Room + month -->
+      <section class="bg-white rounded-xl shadow-sm p-5 grid sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">Room Number</label>
+          <select id="room" required class="w-full border rounded-lg px-3 py-2 bg-white">
+            <option value="">Select a room…</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Bill Month</label>
+          <input id="bill_month" type="month" required class="w-full border rounded-lg px-3 py-2" />
+        </div>
+      </section>
+
+      <!-- Rent -->
+      <section class="bg-white rounded-xl shadow-sm p-5">
+        <div class="flex items-center justify-between">
+          <span class="font-medium">Rent (this month)</span>
+          <span id="rentDisplay" class="text-lg font-semibold">0.00</span>
+        </div>
+        <p class="text-xs text-slate-400 mt-1">Loaded from room configuration (Database 1).</p>
+      </section>
+
+      <!-- Electricity -->
+      <section class="bg-white rounded-xl shadow-sm p-5 space-y-4">
+        <h2 class="font-semibold flex items-center gap-2">⚡ Electricity</h2>
+        <div>
+          <label class="block text-sm font-medium mb-1">Electric bill photo</label>
+          <input id="electric_img" type="file" accept="image/*"
+                 class="block w-full text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-slate-200" />
+        </div>
+        <div class="grid sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Previous meter</label>
+            <input id="electric_prev" type="number" step="any" readonly
+                   class="w-full border rounded-lg px-3 py-2 bg-slate-50" value="0" />
+            <p class="text-xs text-slate-400 mt-1">From last record · default 0</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">This month meter</label>
+            <input id="electric_curr" type="number" step="any" required
+                   class="w-full border rounded-lg px-3 py-2" value="" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Electric bill</label>
+            <input id="electric_bill" type="text" readonly
+                   class="w-full border rounded-lg px-3 py-2 bg-slate-50 font-semibold" value="0.00" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Water -->
+      <section class="bg-white rounded-xl shadow-sm p-5 space-y-4">
+        <h2 class="font-semibold flex items-center gap-2">💧 Water</h2>
+        <div>
+          <label class="block text-sm font-medium mb-1">Water bill photo</label>
+          <input id="water_img" type="file" accept="image/*"
+                 class="block w-full text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-slate-200" />
+        </div>
+        <div class="grid sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Previous meter</label>
+            <input id="water_prev" type="number" step="any" readonly
+                   class="w-full border rounded-lg px-3 py-2 bg-slate-50" value="0" />
+            <p class="text-xs text-slate-400 mt-1">From last record · default 0</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">This month meter</label>
+            <input id="water_curr" type="number" step="any" required
+                   class="w-full border rounded-lg px-3 py-2" value="" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Water bill</label>
+            <input id="water_bill" type="text" readonly
+                   class="w-full border rounded-lg px-3 py-2 bg-slate-50 font-semibold" value="0.00" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Common fee (shown separately from additional bills) -->
+      <section id="commonSection" class="bg-white rounded-xl shadow-sm p-5 hidden">
+        <div class="flex items-center justify-between">
+          <span class="font-medium">Common fee</span>
+          <span id="commonDisplay" class="text-lg font-semibold">0.00</span>
+        </div>
+      </section>
+
+      <!-- Additional bills (only those present in DB1) -->
+      <section id="additionalSection" class="bg-white rounded-xl shadow-sm p-5 hidden">
+        <h2 class="font-semibold mb-3">➕ Additional bills</h2>
+        <div id="additionalList" class="space-y-2 text-sm"></div>
+      </section>
+
+      <!-- Total -->
+      <section class="bg-slate-900 text-white rounded-xl shadow-sm p-5 flex items-center justify-between">
+        <span class="font-medium">Total amount due</span>
+        <span id="totalDisplay" class="text-2xl font-bold">0.00</span>
+      </section>
+
+      <!-- Bank slip -->
+      <section class="bg-white rounded-xl shadow-sm p-5">
+        <label class="block text-sm font-medium mb-1">Bank slip photo</label>
+        <input id="slip_img" type="file" accept="image/*"
+               class="block w-full text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-slate-200" />
+      </section>
+
+      <div class="flex items-center gap-3">
+        <button type="submit" id="submitBtn"
+                class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl">
+          Submit
+        </button>
+        <span id="status" class="text-sm"></span>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    const ELECTRIC_RATE = 8;
+    const WATER_RATE = 20;
+    const WATER_MIN = 100; // minimum water bill
+    const $ = (id) => document.getElementById(id);
+    const fmt = (n) => Number(n || 0).toFixed(2);
+
+    let currentRoom = null; // room config from DB1
+
+    // Default bill month/year: this month if today's date >= 25, else previous month.
+    function defaultBillMonth() {
+      const now = new Date();
+      let year = now.getFullYear();
+      let month = now.getMonth(); // 0-based
+      if (now.getDate() < 25) {
+        month -= 1;
+        if (month < 0) { month = 11; year -= 1; }
+      }
+      return `${year}-${String(month + 1).padStart(2, '0')}`; // YYYY-MM for <input type=month>
+    }
+
+    // ---- helpers ----
+    function fileToDataURL(input) {
+      return new Promise((resolve) => {
+        const file = input.files && input.files[0];
+        if (!file) return resolve(null);
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function recalc() {
+      const ep = Number($('electric_prev').value) || 0;
+      const ec = Number($('electric_curr').value) || 0;
+      const wp = Number($('water_prev').value) || 0;
+      const wc = Number($('water_curr').value) || 0;
+
+      const electricBill = Math.max(0, ec - ep) * ELECTRIC_RATE;
+      const waterBill = Math.max(WATER_MIN, Math.max(0, wc - wp) * WATER_RATE);
+      $('electric_bill').value = fmt(electricBill);
+      $('water_bill').value = fmt(waterBill);
+
+      const rent = currentRoom ? Number(currentRoom.rent) : 0;
+      const commonFee = currentRoom ? Number(currentRoom.common_fee) : 0;
+      const add = additionalTotal(currentRoom);
+
+      const total = rent + electricBill + waterBill + commonFee + add;
+      $('totalDisplay').textContent = fmt(total);
+    }
+
+    // Sum of additional bills configured for a room (common fee is kept separate).
+    function additionalTotal(room) {
+      if (!room) return 0;
+      const others = Array.isArray(room.other_bills) ? room.other_bills : [];
+      return Number(room.refrigerator_bill) + Number(room.microwave_bill) +
+        Number(room.carpark_bill) +
+        others.reduce((s, o) => s + (Number(o.amount) || 0), 0);
+    }
+
+    // Common fee gets its own section, separate from the additional bills.
+    function renderCommonFee(room) {
+      const fee = room ? Number(room.common_fee) : 0;
+      $('commonDisplay').textContent = fmt(fee);
+      $('commonSection').classList.toggle('hidden', !(fee > 0));
+    }
+
+    // Render additional bills that are present (> 0) in DB1.
+    function renderAdditional(room) {
+      const items = [
+        ['Refrigerator', room.refrigerator_bill],
+        ['Microwave oven', room.microwave_bill],
+        ['Carpark', room.carpark_bill],
+      ].filter(([, v]) => Number(v) > 0);
+
+      // Up to 4 labeled "other" bills — show each with its annotation.
+      const others = Array.isArray(room.other_bills) ? room.other_bills : [];
+      for (const o of others) {
+        if (Number(o.amount) > 0) {
+          const label = (o.label && o.label.trim()) ? o.label.trim() : 'Other';
+          items.push([label, o.amount]);
+        }
+      }
+
+      const list = $('additionalList');
+      list.innerHTML = '';
+      if (items.length === 0) {
+        $('additionalSection').classList.add('hidden');
+        return;
+      }
+      $('additionalSection').classList.remove('hidden');
+      for (const [label, value] of items) {
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between border-b last:border-0 py-1';
+        row.innerHTML = `<span>${label}</span><span class="font-medium">${fmt(value)}</span>`;
+        list.appendChild(row);
+      }
+    }
+
+    // Load previous meter readings: the most recent DB2 record for this room whose
+    // bill month is before the selected Bill Month. Defaults to 0 when none exists.
+    async function loadPreviousMeters() {
+      const roomNumber = $('room').value;
+      const billMonth = $('bill_month').value;
+      $('electric_prev').value = 0;
+      $('water_prev').value = 0;
+      if (!roomNumber || !billMonth) { recalc(); return; }
+      try {
+        const res = await fetch(
+          `/api/records?room=${encodeURIComponent(roomNumber)}&before=${encodeURIComponent(billMonth)}`
+        );
+        const last = await res.json();
+        if (last) {
+          $('electric_prev').value = Number(last.electric_curr) || 0;
+          $('water_prev').value = Number(last.water_curr) || 0;
+        }
+      } catch (_) { /* default 0 */ }
+      recalc();
+    }
+
+    async function onRoomChange() {
+      const roomNumber = $('room').value;
+      currentRoom = null;
+      if (!roomNumber) {
+        $('rentDisplay').textContent = '0.00';
+        $('commonSection').classList.add('hidden');
+        $('additionalSection').classList.add('hidden');
+        recalc();
+        return;
+      }
+      const res = await fetch(`/api/rooms?room=${encodeURIComponent(roomNumber)}`);
+      currentRoom = await res.json();
+      $('rentDisplay').textContent = fmt(currentRoom.rent);
+      renderCommonFee(currentRoom);
+      renderAdditional(currentRoom);
+      await loadPreviousMeters();
+    }
+
+    async function loadRooms() {
+      const res = await fetch('/api/rooms');
+      let rooms = await res.json();
+      const session = window.DormAuth && window.DormAuth.getSession();
+      const isAdmin = !!session && session.role === 'admin';
+
+      // Residents (non-admin) may only see/submit their own room.
+      const myRoom = session ? (session.room_number || session.id) : null;
+      if (session && !isAdmin) {
+        rooms = rooms.filter((r) => String(r.room_number) === String(myRoom));
+      }
+
+      const sel = $('room');
+      for (const r of rooms) {
+        const opt = document.createElement('option');
+        opt.value = r.room_number;
+        opt.textContent = `Room ${r.room_number}`;
+        sel.appendChild(opt);
+      }
+
+      if (!rooms.length) {
+        $('status').innerHTML = isAdmin
+          ? '<span class="text-amber-600">No rooms yet — add one in <a class="underline" href="/rooms.html">Rooms (DB1)</a>.</span>'
+          : '<span class="text-amber-600">No room is configured for your account yet. Please contact the administrator.</span>';
+        return;
+      }
+
+      // For a resident with exactly their one room, preselect and lock it.
+      if (!isAdmin && rooms.length === 1) {
+        sel.value = rooms[0].room_number;
+        sel.disabled = true;
+        onRoomChange();
+      }
+    }
+
+    // ---- events ----
+    $('room').addEventListener('change', onRoomChange);
+    $('bill_month').addEventListener('change', loadPreviousMeters);
+
+    // Enter must not auto-submit — submitting only happens via the "Submit" button.
+    $('billForm').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+        e.preventDefault();
+        e.target.blur();
+      }
+    });
+    ['electric_prev', 'electric_curr', 'water_prev', 'water_curr'].forEach((id) =>
+      $(id).addEventListener('input', recalc)
+    );
+
+    $('billForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentRoom) { $('status').textContent = 'Pick a room first.'; return; }
+      const btn = $('submitBtn');
+      btn.disabled = true; btn.classList.add('opacity-60');
+      $('status').textContent = 'Uploading…';
+
+      const [electricImg, waterImg, slipImg] = await Promise.all([
+        fileToDataURL($('electric_img')),
+        fileToDataURL($('water_img')),
+        fileToDataURL($('slip_img')),
+      ]);
+
+      const payload = {
+        room_number: currentRoom.room_number,
+        bill_month: $('bill_month').value,
+        rent: currentRoom.rent,
+        electric_bill_image: electricImg,
+        electric_prev: $('electric_prev').value,
+        electric_curr: $('electric_curr').value,
+        water_bill_image: waterImg,
+        water_prev: $('water_prev').value,
+        water_curr: $('water_curr').value,
+        refrigerator_bill: currentRoom.refrigerator_bill,
+        microwave_bill: currentRoom.microwave_bill,
+        carpark_bill: currentRoom.carpark_bill,
+        common_fee: currentRoom.common_fee,
+        other_bills: currentRoom.other_bills,
+        bank_slip_image: slipImg,
+      };
+
+      try {
+        const res = await fetch('/api/records', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed');
+        $('status').innerHTML =
+          `<span class="text-emerald-600">Saved ✓ (total ${fmt(data.total)})</span>`;
+        $('billForm').reset();
+        $('bill_month').value = defaultBillMonth();
+        currentRoom = null;
+        $('rentDisplay').textContent = '0.00';
+        $('totalDisplay').textContent = '0.00';
+        $('commonSection').classList.add('hidden');
+        $('additionalSection').classList.add('hidden');
+
+        // Residents have a single locked room — form.reset() clears the select,
+        // so re-select and reload it for the next submission.
+        const s = window.DormAuth && window.DormAuth.getSession();
+        if (s && s.role !== 'admin') {
+          $('room').value = s.room_number || s.id;
+          onRoomChange();
+        }
+      } catch (err) {
+        $('status').innerHTML = `<span class="text-red-600">${err.message}</span>`;
+      } finally {
+        btn.disabled = false; btn.classList.remove('opacity-60');
+      }
+    });
+
+    $('bill_month').value = defaultBillMonth();
+    // Residents cannot change the billing month — lock it to the computed default.
+    const _sess = window.DormAuth && window.DormAuth.getSession();
+    if (_sess && _sess.role !== 'admin') $('bill_month').disabled = true;
+    loadRooms();
+  </script>
+</body>
+</html>

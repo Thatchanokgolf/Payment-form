@@ -1,0 +1,30 @@
+# Netlify deploy configuration
+[build]
+  # No build step needed — static files served from /public
+  publish = "public"
+  functions = "netlify/functions"
+
+[functions]
+  # esbuild is required to bundle the @neondatabase/serverless dependency
+  node_bundler = "esbuild"
+
+# Friendly API routes -> serverless functions
+[[redirects]]
+  from = "/api/login"
+  to = "/.netlify/functions/login"
+  status = 200
+
+[[redirects]]
+  from = "/api/users"
+  to = "/.netlify/functions/users"
+  status = 200
+
+[[redirects]]
+  from = "/api/rooms"
+  to = "/.netlify/functions/rooms"
+  status = 200
+
+[[redirects]]
+  from = "/api/records"
+  to = "/.netlify/functions/records"
+  status = 200

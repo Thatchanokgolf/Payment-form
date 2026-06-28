@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rooms (Database 1)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/auth.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+  <nav class="bg-slate-900 text-white">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+      <span id="navHeading" class="font-semibold"></span>
+      <div class="flex items-center gap-4 text-sm">
+        <a href="/" class="hover:underline text-slate-300">Payment Form</a>
+        <a href="/rooms.html" class="nav-admin hover:underline font-medium">Rooms (DB1)</a>
+        <a href="/records.html" class="nav-admin hover:underline text-slate-300">Records (DB2)</a>
+        <a href="/users.html" class="nav-admin hover:underline text-slate-300">Users (DB3)</a>
+        <button id="logoutBtn" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1">Log out</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-1">Room Configuration · Database 1</h1>
+    <p class="text-slate-500 mb-6 text-sm">Set the monthly rent and fixed additional bills per room. A bill set to 0 will be hidden on the payment form.</p>
+
+    <form id="roomForm" class="bg-white rounded-xl shadow-sm p-5 grid sm:grid-cols-2 gap-4 mb-8">
+      <div>
+        <label class="block text-sm font-medium mb-1">Room number</label>
+        <input id="room_number" required class="w-full border rounded-lg px-3 py-2" placeholder="101" />
+        <p class="text-xs text-slate-400 mt-1">Enter an existing room number to load &amp; edit its data.</p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Rent</label>
+        <input id="rent" type="number" step="any" class="w-full border rounded-lg px-3 py-2" value="0" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Refrigerator bill</label>
+        <input id="refrigerator_bill" type="number" step="any" class="w-full border rounded-lg px-3 py-2" value="0" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Microwave oven bill</label>
+        <input id="microwave_bill" type="number" step="any" class="w-full border rounded-lg px-3 py-2" value="0" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Carpark bill</label>
+        <input id="carpark_bill" type="number" step="any" class="w-full border rounded-lg px-3 py-2" value="0" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Common fee</label>
+        <input id="common_fee" type="number" step="any" class="w-full border rounded-lg px-3 py-2" value="0" />
+      </div>
+
+      <!-- Other bills: up to 4, each annotated with what it is for -->
+      <div class="sm:col-span-2">
+        <div class="flex items-center justify-between mb-1">
+          <label class="block text-sm font-medium">Other bills <span class="text-slate-400 font-normal">(up to 4)</span></label>
+          <button type="button" id="addOtherBtn"
+                  class="text-sm bg-slate-200 hover:bg-slate-300 rounded-lg px-3 py-1">+ Add other bill</button>
+        </div>
+        <div id="otherBills" class="space-y-2"></div>
+      </div>
+
+      <div class="sm:col-span-2 flex items-center gap-3">
+        <button class="bg-slate-900 hover:bg-slate-700 text-white font-semibold px-6 py-2.5 rounded-xl">Save room</button>
+        <button type="button" id="clearBtn" class="text-sm text-slate-500 hover:underline">Clear</button>
+        <span id="status" class="text-sm"></span>
+      </div>
+    </form>
+
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500 text-left">
+          <tr>
+            <th class="px-4 py-2">Room</th>
+            <th class="px-4 py-2">Rent</th>
+            <th class="px-4 py-2">Fridge</th>
+            <th class="px-4 py-2">Microwave</th>
+            <th class="px-4 py-2">Carpark</th>
+            <th class="px-4 py-2">Common</th>
+            <th class="px-4 py-2">Other bills</th>
+            <th class="px-4 py-2"></th>
+          </tr>
+        </thead>
+        <tbody id="roomRows"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const fmt = (n) => Number(n || 0).toFixed(2);
+    const MAX_OTHER = 4;
+    let roomsCache = []; // last-loaded list of rooms, used for the auto-load lookup
+
+    // ---- dynamic "other bills" rows (label + amount, up to 4) ----
+    function refreshAddBtn() {
+      const btn = $('addOtherBtn');
+      btn.disabled = $('otherBills').children.length >= MAX_OTHER;
+      btn.classList.toggle('opacity-50', btn.disabled);
+    }
+    function addOtherRow(label = '', amount = '') {
+      const box = $('otherBills');
+      if (box.children.length >= MAX_OTHER) return;
+      const row = document.createElement('div');
+      row.className = 'flex gap-2 items-center other-row';
+      row.innerHTML = `
+        <input class="other-label flex-1 border rounded-lg px-3 py-2" placeholder="What is this bill for?" />
+        <input class="other-amount w-32 border rounded-lg px-3 py-2" type="number" step="any" placeholder="Amount" />
+        <button type="button" class="other-remove text-red-600 hover:underline text-sm px-2">Remove</button>`;
+      row.querySelector('.other-label').value = label;
+      row.querySelector('.other-amount').value = amount;
+      row.querySelector('.other-remove').addEventListener('click', () => { row.remove(); refreshAddBtn(); });
+      box.appendChild(row);
+      refreshAddBtn();
+    }
+    function setOtherBills(list) {
+      $('otherBills').innerHTML = '';
+      (Array.isArray(list) ? list : []).slice(0, MAX_OTHER)
+        .forEach((o) => addOtherRow(o.label || '', o.amount ?? ''));
+      refreshAddBtn();
+    }
+    function getOtherBills() {
+      return [...$('otherBills').querySelectorAll('.other-row')]
+        .map((row) => ({
+          label: row.querySelector('.other-label').value.trim(),
+          amount: Number(row.querySelector('.other-amount').value) || 0,
+        }))
+        .filter((o) => o.label !== '' || o.amount !== 0);
+    }
+    $('addOtherBtn').addEventListener('click', () => addOtherRow());
+
+    async function loadRooms() {
+      const res = await fetch('/api/rooms');
+      const rooms = await res.json();
+      roomsCache = Array.isArray(rooms) ? rooms : [];
+      const body = $('roomRows');
+      body.innerHTML = '';
+      if (!rooms.length) {
+        body.innerHTML = '<tr><td colspan="8" class="px-4 py-6 text-center text-slate-400">No rooms yet.</td></tr>';
+        return;
+      }
+      for (const r of rooms) {
+        const others = Array.isArray(r.other_bills) ? r.other_bills : [];
+        const othersHtml = others.length
+          ? others.map((o) => `${o.label || 'Other'}: ${fmt(o.amount)}`).join('<br>')
+          : '<span class="text-slate-400">—</span>';
+        const tr = document.createElement('tr');
+        tr.className = 'border-t';
+        tr.innerHTML = `
+          <td class="px-4 py-2 font-medium">${r.room_number}</td>
+          <td class="px-4 py-2">${fmt(r.rent)}</td>
+          <td class="px-4 py-2">${fmt(r.refrigerator_bill)}</td>
+          <td class="px-4 py-2">${fmt(r.microwave_bill)}</td>
+          <td class="px-4 py-2">${fmt(r.carpark_bill)}</td>
+          <td class="px-4 py-2">${fmt(r.common_fee)}</td>
+          <td class="px-4 py-2 text-xs">${othersHtml}</td>
+          <td class="px-4 py-2 text-right whitespace-nowrap">
+            <button class="text-blue-600 hover:underline mr-3" data-edit='${JSON.stringify(r)}'>Edit</button>
+            <button class="text-red-600 hover:underline" data-del="${r.room_number}">Delete</button>
+          </td>`;
+        body.appendChild(tr);
+      }
+      body.querySelectorAll('[data-edit]').forEach((b) =>
+        b.addEventListener('click', () => fillForm(JSON.parse(b.dataset.edit)))
+      );
+      body.querySelectorAll('[data-del]').forEach((b) =>
+        b.addEventListener('click', () => delRoom(b.dataset.del))
+      );
+    }
+
+    // Populate the bill fields from a room object (leaves room_number untouched).
+    function applyRoomData(r) {
+      $('rent').value = r.rent;
+      $('refrigerator_bill').value = r.refrigerator_bill;
+      $('microwave_bill').value = r.microwave_bill;
+      $('carpark_bill').value = r.carpark_bill;
+      $('common_fee').value = r.common_fee;
+      setOtherBills(r.other_bills);
+    }
+
+    function fillForm(r) {
+      $('room_number').value = r.room_number;
+      applyRoomData(r);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Reset only the bill fields, keeping whatever room number was typed.
+    function resetFields() {
+      ['rent','refrigerator_bill','microwave_bill','carpark_bill','common_fee']
+        .forEach((id) => ($(id).value = 0));
+      setOtherBills([]);
+    }
+
+    // When a room number is entered, load that room's current data if it exists.
+    function onRoomNumberEntered() {
+      const rn = $('room_number').value.trim();
+      if (!rn) { $('status').textContent = ''; return; }
+      const match = roomsCache.find((r) => String(r.room_number) === rn);
+      if (match) {
+        applyRoomData(match);
+        $('status').innerHTML = '<span class="text-blue-600">Existing room loaded — editing.</span>';
+      } else {
+        resetFields();
+        $('status').innerHTML = '<span class="text-slate-400">New room.</span>';
+      }
+    }
+    $('room_number').addEventListener('change', onRoomNumberEntered);
+
+    // Enter must not auto-save — saving only happens via the "Save room" button.
+    // Pressing Enter just commits the current field (blur fires its change handler).
+    $('roomForm').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+        e.preventDefault();
+        e.target.blur();
+      }
+    });
+
+    function clearForm() {
+      $('roomForm').reset();
+      resetFields();
+    }
+
+    async function delRoom(roomNumber) {
+      if (!confirm(`Delete room ${roomNumber}?`)) return;
+      await fetch('/api/rooms', {
+        method: 'DELETE',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ room_number: roomNumber }),
+      });
+      loadRooms();
+    }
+
+    $('clearBtn').addEventListener('click', clearForm);
+
+    $('roomForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      $('status').textContent = 'Saving…';
+      const payload = {
+        room_number: $('room_number').value,
+        rent: $('rent').value,
+        refrigerator_bill: $('refrigerator_bill').value,
+        microwave_bill: $('microwave_bill').value,
+        carpark_bill: $('carpark_bill').value,
+        common_fee: $('common_fee').value,
+        other_bills: getOtherBills(),
+      };
+      try {
+        const res = await fetch('/api/rooms', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed');
+        $('status').innerHTML = '<span class="text-emerald-600">Saved ✓</span>';
+        clearForm();
+        loadRooms();
+      } catch (err) {
+        $('status').innerHTML = `<span class="text-red-600">${err.message}</span>`;
+      }
+    });
+
+    loadRooms();
+  </script>
+</body>
+</html>
