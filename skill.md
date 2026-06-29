@@ -32,6 +32,17 @@ A reusable playbook for building a static **HTML + Tailwind CSS** front end back
   hash passwords, issue a signed session token from `login`, and verify it inside every
   function. Residents are limited to their own room only in the UI.
 
+## 1c. i18n (Thai / English)
+
+- `public/i18n.js` is loaded in the `<head>` of every page. Default language is **Thai**
+  (`th`); the choice is saved in `localStorage` under `dormLang`.
+- Static text uses attributes: `data-i18n="key"` (textContent), `data-i18n-ph="key"`
+  (placeholder), `data-i18n-html="key"` (innerHTML).
+- Dynamic strings in page scripts use `window.I18n.t('key', { vars })` ( `{var}`
+  interpolation). Pages re-render dynamic content by listening for the `i18n:change` event.
+- Each nav has a `#langToggle` button that flips TH⇄EN. Add new strings to BOTH the `en`
+  and `th` dictionaries in `i18n.js` (they must stay symmetric).
+
 ## 2. Project layout
 
 ```
@@ -39,6 +50,12 @@ dorm-rent-app/
 ├── public/                 # static site root (Netlify `publish`)
 │   ├── login.html          # dummy login screen
 │   ├── auth.js             # client-side auth guard (loaded by every page)
+│   ├── i18n.js             # Thai/English translations + toggle (loaded by every page)
+│   ├── menu.html           # main menu (post-login landing): links to the forms
+│   ├── contract.html       # contract form (dates, PDF links, extend/terminate links)
+│   ├── contracts.html      # manage contracts (Database 4) — admin only
+│   ├── extend.html         # extend contract (to end of Apr/May next year)
+│   ├── rules.html          # dormitory rules — placeholder
 │   ├── index.html          # payment form (writes Database 2)
 │   ├── rooms.html          # manage Database 1 (room config) — admin only
 │   ├── records.html        # view Database 2 submissions — admin only
@@ -46,6 +63,7 @@ dorm-rent-app/
 ├── netlify/functions/
 │   ├── login.js            # verify credentials (Database 3) -> /api/login
 │   ├── users.js            # manage app_users (admin) -> /api/users
+│   ├── contracts.js        # contracts CRUD + extend (Database 4) -> /api/contracts
 │   ├── rooms.js            # CRUD for Database 1  -> /api/rooms
 │   └── records.js          # list/create Database 2 -> /api/records
 ├── schema.sql              # run once in Neon SQL editor
@@ -86,6 +104,11 @@ dorm-rent-app/
   its amount is **> 0**. Other bills are stored as `JSONB` (`other_bills` = `[{label, amount}]`).
 - Other bills are **one-off**: when a payment record is submitted, the room's `other_bills`
   in DB1 are cleared to `[]` (the bill record keeps its own snapshot), so they don't recur.
+- Contracts (DB4): one current contract per room (`room_number` PK). The contract page loads
+  by room (resident = own room, admin picks one). **Extend** only allows the end of April
+  (`MM-DD=04-30`) or May (`05-31`) of the year after the current end date, validated again
+  server-side (`POST /api/contracts {action:'extend'}`) — must be a valid date and after the
+  current end. Dates are stored as `DATE` and returned as `YYYY-MM-DD` strings.
 
 ## 4. Local development
 

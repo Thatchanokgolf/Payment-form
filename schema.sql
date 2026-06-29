@@ -42,6 +42,19 @@ INSERT INTO app_users (user_id, password, room_number, role, heading) VALUES
 ON CONFLICT (user_id) DO NOTHING;
 
 -- ---------------------------------------------------------------------
+-- DATABASE 4: contracts (one current contract per room)
+-- start/end dates + links to the contract & furniture-check PDFs.
+-- ---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS contracts (
+  room_number        TEXT PRIMARY KEY,
+  user_id            TEXT,
+  start_date         DATE,
+  end_date           DATE,
+  contract_pdf_url   TEXT,
+  furniture_pdf_url  TEXT
+);
+
+-- ---------------------------------------------------------------------
 -- DATABASE 2: submitted monthly bill records
 -- electric_bill = (electric_curr - electric_prev) * 8
 -- water_bill    = (water_curr    - water_prev)    * 20

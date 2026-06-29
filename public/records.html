@@ -6,42 +6,46 @@
   <title>Records (Database 2)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="/auth.js"></script>
+  <script src="/i18n.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen">
   <nav class="bg-slate-900 text-white">
     <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-      <span id="navHeading" class="font-semibold"></span>
+      <a href="/menu.html" id="navHeading" class="font-semibold hover:underline"></a>
       <div class="flex items-center gap-4 text-sm">
-        <a href="/" class="hover:underline text-slate-300">Payment Form</a>
-        <a href="/rooms.html" class="nav-admin hover:underline text-slate-300">Rooms (DB1)</a>
-        <a href="/records.html" class="nav-admin hover:underline font-medium">Records (DB2)</a>
-        <a href="/users.html" class="nav-admin hover:underline text-slate-300">Users (DB3)</a>
-        <button id="logoutBtn" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1">Log out</button>
+        <a href="/menu.html" class="hover:underline text-slate-300" data-i18n="nav.menu">Menu</a>
+        <a href="/" class="hover:underline text-slate-300" data-i18n="nav.payment">Payment Form</a>
+        <a href="/rooms.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.rooms">Rooms (DB1)</a>
+        <a href="/records.html" class="nav-admin hover:underline font-medium" data-i18n="nav.records">Records (DB2)</a>
+        <a href="/users.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.users">Users (DB3)</a>
+        <a href="/contracts.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.contracts">Contracts (DB4)</a>
+        <button id="langToggle" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1">EN</button>
+        <button id="logoutBtn" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1" data-i18n="nav.logout">Log out</button>
       </div>
     </div>
   </nav>
 
   <main class="max-w-5xl mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold mb-6">Submitted Records · Database 2</h1>
+    <h1 class="text-2xl font-bold mb-6" data-i18n="rec.title">Submitted Records · Database 2</h1>
 
     <!-- Filter bar -->
     <div class="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-wrap items-end gap-4">
       <div>
-        <label class="block text-xs font-medium text-slate-500 mb-1">Room</label>
+        <label class="block text-xs font-medium text-slate-500 mb-1" data-i18n="rec.f_room">Room</label>
         <select id="f_room" class="border rounded-lg px-3 py-2 bg-white text-sm">
-          <option value="">All rooms</option>
+          <option value="" data-i18n="rec.f_all_rooms">All rooms</option>
         </select>
       </div>
       <div>
-        <label class="block text-xs font-medium text-slate-500 mb-1">From month</label>
+        <label class="block text-xs font-medium text-slate-500 mb-1" data-i18n="rec.f_from">From month</label>
         <input id="f_from" type="month" class="border rounded-lg px-3 py-2 text-sm" />
       </div>
       <div>
-        <label class="block text-xs font-medium text-slate-500 mb-1">To month</label>
+        <label class="block text-xs font-medium text-slate-500 mb-1" data-i18n="rec.f_to">To month</label>
         <input id="f_to" type="month" class="border rounded-lg px-3 py-2 text-sm" />
       </div>
-      <button id="applyBtn" class="bg-slate-900 hover:bg-slate-700 text-white text-sm font-semibold px-5 py-2 rounded-lg">Apply</button>
-      <button id="clearBtn" class="text-sm text-slate-500 hover:underline">Clear</button>
+      <button id="applyBtn" class="bg-slate-900 hover:bg-slate-700 text-white text-sm font-semibold px-5 py-2 rounded-lg" data-i18n="rec.apply">Apply</button>
+      <button id="clearBtn" class="text-sm text-slate-500 hover:underline" data-i18n="rec.clear">Clear</button>
       <span id="count" class="text-sm text-slate-400 ml-auto"></span>
     </div>
 
@@ -49,23 +53,23 @@
       <table class="w-full text-sm whitespace-nowrap">
         <thead class="bg-slate-50 text-slate-500 text-left">
           <tr>
-            <th class="px-3 py-2">Date</th>
-            <th class="px-3 py-2">Room</th>
-            <th class="px-3 py-2">Month</th>
-            <th class="px-3 py-2">Rent</th>
-            <th class="px-3 py-2">Elec (prev→cur)</th>
-            <th class="px-3 py-2">Elec bill</th>
-            <th class="px-3 py-2">Water (prev→cur)</th>
-            <th class="px-3 py-2">Water bill</th>
-            <th class="px-3 py-2">Common</th>
-            <th class="px-3 py-2">Add.</th>
-            <th class="px-3 py-2 font-semibold">Total</th>
+            <th class="px-3 py-2" data-i18n="rec.th_date">Date</th>
+            <th class="px-3 py-2" data-i18n="rec.th_room">Room</th>
+            <th class="px-3 py-2" data-i18n="rec.th_month">Month</th>
+            <th class="px-3 py-2" data-i18n="rec.th_rent">Rent</th>
+            <th class="px-3 py-2" data-i18n="rec.th_elec">Elec (prev→cur)</th>
+            <th class="px-3 py-2" data-i18n="rec.th_elecbill">Elec bill</th>
+            <th class="px-3 py-2" data-i18n="rec.th_water">Water (prev→cur)</th>
+            <th class="px-3 py-2" data-i18n="rec.th_waterbill">Water bill</th>
+            <th class="px-3 py-2" data-i18n="rec.th_common">Common</th>
+            <th class="px-3 py-2" data-i18n="rec.th_add">Add.</th>
+            <th class="px-3 py-2 font-semibold" data-i18n="rec.th_total">Total</th>
           </tr>
         </thead>
         <tbody id="rows"></tbody>
       </table>
     </div>
-    <p class="text-xs text-slate-400 mt-2">Tip: click a <span class="text-blue-600">new meter reading</span> to view its photo, or the <span class="text-blue-600">Add.</span> amount for the bill breakdown.</p>
+    <p class="text-xs text-slate-400 mt-2" data-i18n="rec.tip">Tip: click a new meter reading to view its photo, or the Add. amount for the bill breakdown.</p>
   </main>
 
   <!-- Modal -->
@@ -102,8 +106,9 @@
     $('modal').addEventListener('click', (e) => { if (e.target === $('modal')) closeModal(); });
 
     // Fetch and display a meter/slip photo for one record.
-    async function showImage(id, type, title) {
-      openModal(title, '<p class="text-slate-400 text-sm">Loading…</p>');
+    async function showImage(id, type, titleKey) {
+      const title = I18n.t(titleKey);
+      openModal(title, `<p class="text-slate-400 text-sm">${I18n.t('rec.loading')}</p>`);
       try {
         const res = await fetch(`/api/records?id=${id}&image=${type}`);
         const data = await res.json();
@@ -111,7 +116,7 @@
           $('modalBody').innerHTML =
             `<img src="${data.image}" alt="${esc(title)}" class="max-w-full rounded-lg" />`;
         } else {
-          $('modalBody').innerHTML = '<p class="text-slate-400 text-sm">No photo uploaded for this record.</p>';
+          $('modalBody').innerHTML = `<p class="text-slate-400 text-sm">${I18n.t('rec.no_photo')}</p>`;
         }
       } catch (err) {
         $('modalBody').innerHTML = `<p class="text-red-600 text-sm">${esc(err.message)}</p>`;
@@ -123,12 +128,12 @@
       const r = recById[id];
       if (!r) return;
       const rows = [
-        ['Refrigerator', r.refrigerator_bill],
-        ['Microwave oven', r.microwave_bill],
-        ['Carpark', r.carpark_bill],
+        [I18n.t('item.refrigerator'), r.refrigerator_bill],
+        [I18n.t('item.microwave'), r.microwave_bill],
+        [I18n.t('item.carpark'), r.carpark_bill],
       ].filter(([, v]) => Number(v) > 0);
       const others = Array.isArray(r.other_bills) ? r.other_bills : [];
-      for (const o of others) rows.push([o.label || 'Other', o.amount]);
+      for (const o of others) rows.push([o.label || I18n.t('item.other'), o.amount]);
 
       const total = rows.reduce((s, [, v]) => s + (Number(v) || 0), 0);
       const body = rows.length
@@ -136,9 +141,9 @@
             `<div class="flex justify-between py-1 border-b last:border-0">
                <span>${esc(label)}</span><span class="font-medium">${fmt(v)}</span></div>`).join('')
           + `<div class="flex justify-between pt-2 mt-1 font-semibold">
-               <span>Total additional</span><span>${fmt(total)}</span></div>`
-        : '<p class="text-slate-400 text-sm">No additional bills on this record.</p>';
-      openModal(`Additional bills · Room ${esc(r.room_number)} · ${esc(r.bill_month || '—')}`, body);
+               <span>${I18n.t('rec.total_add')}</span><span>${fmt(total)}</span></div>`
+        : `<p class="text-slate-400 text-sm">${I18n.t('rec.no_add')}</p>`;
+      openModal(I18n.t('rec.add_title', { room: esc(r.room_number), month: esc(r.bill_month || '—') }), body);
     }
 
     // Populate the room filter dropdown from the configured rooms.
@@ -149,7 +154,7 @@
         for (const r of rooms) {
           const opt = document.createElement('option');
           opt.value = r.room_number;
-          opt.textContent = `Room ${r.room_number}`;
+          opt.textContent = `${I18n.t('rec.th_room')} ${r.room_number}`;
           $('f_room').appendChild(opt);
         }
       } catch (_) { /* ignore */ }
@@ -165,9 +170,9 @@
       const rows = await res.json();
       const body = document.getElementById('rows');
       body.innerHTML = '';
-      $('count').textContent = `${rows.length} record${rows.length === 1 ? '' : 's'}`;
+      $('count').textContent = I18n.t('rec.count', { n: rows.length });
       if (!rows.length) {
-        body.innerHTML = '<tr><td colspan="11" class="px-4 py-6 text-center text-slate-400">No records match.</td></tr>';
+        body.innerHTML = `<tr><td colspan="11" class="px-4 py-6 text-center text-slate-400">${I18n.t('rec.none')}</td></tr>`;
         return;
       }
       for (const r of rows) {
@@ -185,14 +190,14 @@
           <td class="px-3 py-2">${r.bill_month || '—'}</td>
           <td class="px-3 py-2">${fmt(r.rent)}</td>
           <td class="px-3 py-2 text-slate-500">${fmt(r.electric_prev)} →
-            <button class="${link}" onclick="showImage(${r.id},'electric','Electric meter photo')">${fmt(r.electric_curr)}</button></td>
+            <button class="${link}" onclick="showImage(${r.id},'electric','rec.elec_photo')">${fmt(r.electric_curr)}</button></td>
           <td class="px-3 py-2">${fmt(r.electric_bill)}</td>
           <td class="px-3 py-2 text-slate-500">${fmt(r.water_prev)} →
-            <button class="${link}" onclick="showImage(${r.id},'water','Water meter photo')">${fmt(r.water_curr)}</button></td>
+            <button class="${link}" onclick="showImage(${r.id},'water','rec.water_photo')">${fmt(r.water_curr)}</button></td>
           <td class="px-3 py-2">${fmt(r.water_bill)}</td>
           <td class="px-3 py-2">${fmt(r.common_fee)}</td>
           <td class="px-3 py-2"><button class="${link}" onclick="showOther(${r.id})">${fmt(add)}</button></td>
-          <td class="px-3 py-2 font-semibold"><button class="${link}" onclick="showImage(${r.id},'slip','Payment slip')">${fmt(r.total)}</button></td>`;
+          <td class="px-3 py-2 font-semibold"><button class="${link}" onclick="showImage(${r.id},'slip','rec.slip')">${fmt(r.total)}</button></td>`;
         body.appendChild(tr);
       }
     }
@@ -207,6 +212,9 @@
 
     loadRoomOptions();
     load();
+
+    // Re-render the table (dynamic labels/count) on language change.
+    document.addEventListener('i18n:change', load);
   </script>
 </body>
 </html>

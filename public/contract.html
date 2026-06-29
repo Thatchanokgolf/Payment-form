@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contract Form — Dorm Rent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/auth.js"></script>
+  <script src="/i18n.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+  <nav class="bg-slate-900 text-white">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/menu.html" id="navHeading" class="font-semibold hover:underline"></a>
+      <div class="flex items-center gap-4 text-sm">
+        <a href="/menu.html" class="hover:underline text-slate-300" data-i18n="nav.menu">Menu</a>
+        <a href="/rooms.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.rooms">Rooms (DB1)</a>
+        <a href="/records.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.records">Records (DB2)</a>
+        <a href="/users.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.users">Users (DB3)</a>
+        <a href="/contracts.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.contracts">Contracts (DB4)</a>
+        <button id="langToggle" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1">EN</button>
+        <button id="logoutBtn" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1" data-i18n="nav.logout">Log out</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-3xl mx-auto px-4 py-8 space-y-6">
+    <div>
+      <h1 class="text-2xl font-bold mb-1" data-i18n="con.title">Contract Form</h1>
+      <p class="text-slate-500 text-sm" data-i18n="con.subtitle">For termination and continuation of contract.</p>
+    </div>
+
+    <!-- Admin room picker -->
+    <div id="roomPicker" class="bg-white rounded-xl shadow-sm p-4 hidden">
+      <label class="block text-sm font-medium mb-1" data-i18n="con.room">Room</label>
+      <select id="roomSelect" class="w-full sm:w-64 border rounded-lg px-3 py-2 bg-white">
+        <option value="" data-i18n="con.select_room">Select a room…</option>
+      </select>
+    </div>
+
+    <!-- Resident with no room -->
+    <p id="noRoom" class="hidden text-amber-600 text-sm" data-i18n="con.no_room_user"></p>
+
+    <!-- Contract dates -->
+    <section class="bg-white rounded-xl shadow-sm p-5">
+      <p id="noContract" class="hidden text-amber-600 text-sm mb-3" data-i18n="con.no_contract"></p>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div class="flex items-center justify-between border-b sm:border-0 pb-2 sm:pb-0">
+          <span class="font-medium" data-i18n="con.start">Start date</span>
+          <span id="startDate" class="text-slate-700">—</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="font-medium" data-i18n="con.end">End date</span>
+          <span id="endDate" class="text-slate-700">—</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Documents -->
+    <section class="bg-white rounded-xl shadow-sm p-5">
+      <h2 class="font-semibold mb-3" data-i18n="con.documents">Documents</h2>
+      <div class="space-y-2">
+        <a id="contractPdf" href="#" target="_blank" rel="noopener"
+           class="hidden items-center gap-2 text-blue-600 hover:underline">
+          📄 <span data-i18n="con.contract_pdf">Contract (PDF)</span>
+        </a>
+        <a id="furniturePdf" href="#" target="_blank" rel="noopener"
+           class="hidden items-center gap-2 text-blue-600 hover:underline">
+          🛋️ <span data-i18n="con.furniture_pdf">Furniture check form (PDF)</span>
+        </a>
+        <p id="noDocs" class="text-slate-400 text-sm">—</p>
+      </div>
+    </section>
+
+    <!-- Options -->
+    <section class="bg-white rounded-xl shadow-sm p-5">
+      <h2 class="font-semibold mb-3" data-i18n="con.actions">Options</h2>
+      <div class="flex flex-col gap-2">
+        <a href="/rules.html"
+           class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200">
+          📘 <span data-i18n="con.rules">Dormitory rules</span>
+        </a>
+        <a id="extendLink" href="/extend.html"
+           class="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-800">
+          ➕ <span data-i18n="con.extend">Extend contract</span>
+        </a>
+        <a href="https://docs.google.com/forms/d/1BhNAdQm9OGfXEHwKYgL19RjpJnQ7J3jtNHUTl5jh6Xw/edit"
+           target="_blank" rel="noopener"
+           class="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-100 hover:bg-red-200 text-red-800">
+          ✖ <span data-i18n="con.terminate">Terminate contract</span> <span class="text-xs">↗</span>
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const session = (window.DormAuth && window.DormAuth.getSession()) || {};
+    const isAdmin = session.role === 'admin';
+    let currentRoom = '';
+
+    function showLink(el, url) {
+      if (url) { el.href = url; el.classList.remove('hidden'); el.classList.add('flex'); }
+      else { el.classList.add('hidden'); el.classList.remove('flex'); }
+    }
+
+    function render(c) {
+      $('startDate').textContent = (c && c.start_date) || '—';
+      $('endDate').textContent = (c && c.end_date) || '—';
+      $('noContract').classList.toggle('hidden', !!c);
+
+      const hasContractPdf = c && c.contract_pdf_url;
+      const hasFurniturePdf = c && c.furniture_pdf_url;
+      showLink($('contractPdf'), hasContractPdf);
+      showLink($('furniturePdf'), hasFurniturePdf);
+      $('noDocs').classList.toggle('hidden', hasContractPdf || hasFurniturePdf);
+
+      // Extend only makes sense when a contract exists.
+      $('extendLink').classList.toggle('hidden', !c);
+      $('extendLink').href = '/extend.html' + (currentRoom ? ('?room=' + encodeURIComponent(currentRoom)) : '');
+    }
+
+    async function loadContract(room) {
+      currentRoom = room || '';
+      if (!room) { render(null); return; }
+      try {
+        const res = await fetch('/api/contracts?room=' + encodeURIComponent(room));
+        render(await res.json());
+      } catch (_) { render(null); }
+    }
+
+    // Admins can preview any room's contract via the picker; editing is on the
+    // Contracts (DB4) management page.
+    async function initAdmin() {
+      $('roomPicker').classList.remove('hidden');
+      try {
+        const rooms = await (await fetch('/api/rooms')).json();
+        for (const r of rooms) {
+          const opt = document.createElement('option');
+          opt.value = r.room_number;
+          opt.textContent = I18n.t('con.room') + ' ' + r.room_number;
+          $('roomSelect').appendChild(opt);
+        }
+      } catch (_) { /* ignore */ }
+      $('roomSelect').addEventListener('change', () => loadContract($('roomSelect').value));
+    }
+
+    if (isAdmin) {
+      initAdmin();
+      render(null);
+    } else {
+      const room = session.room_number || session.id;
+      if (!room) { $('noRoom').classList.remove('hidden'); render(null); }
+      else loadContract(room);
+    }
+
+    // Refresh the admin room-option labels on language change.
+    document.addEventListener('i18n:change', () => {
+      $('roomSelect').querySelectorAll('option[value]:not([value=""])').forEach((o) => {
+        o.textContent = I18n.t('con.room') + ' ' + o.value;
+      });
+    });
+  </script>
+</body>
+</html>

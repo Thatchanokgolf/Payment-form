@@ -5,7 +5,7 @@
 // Netlify functions remain open; do not rely on this to protect data.
 (function () {
   const KEY = 'dormAuth';
-  const ADMIN_ONLY = ['rooms.html', 'records.html', 'users.html'];
+  const ADMIN_ONLY = ['rooms.html', 'records.html', 'users.html', 'contracts.html'];
 
   const getSession = () => {
     try { return JSON.parse(localStorage.getItem(KEY)); } catch (_) { return null; }
@@ -46,7 +46,7 @@
   const session = getSession();
 
   if (onLogin) {
-    if (session) location.replace('/'); // already signed in
+    if (session) location.replace('/menu.html'); // already signed in
     return;
   }
   if (!session) {
@@ -54,7 +54,7 @@
     return;
   }
   if (session.role !== 'admin' && ADMIN_ONLY.some((p) => path.endsWith(p))) {
-    location.replace('/'); // users cannot access DB1/DB2 pages
+    location.replace('/menu.html'); // users cannot access DB1/DB2/DB3 pages
     return;
   }
 

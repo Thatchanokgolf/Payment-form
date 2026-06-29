@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Main Menu — Dorm Rent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/auth.js"></script>
+  <script src="/i18n.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+  <nav class="bg-slate-900 text-white">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/menu.html" id="navHeading" class="font-semibold hover:underline"></a>
+      <div class="flex items-center gap-4 text-sm">
+        <a href="/rooms.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.rooms">Rooms (DB1)</a>
+        <a href="/records.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.records">Records (DB2)</a>
+        <a href="/users.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.users">Users (DB3)</a>
+        <a href="/contracts.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.contracts">Contracts (DB4)</a>
+        <button id="langToggle" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1">EN</button>
+        <button id="logoutBtn" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1" data-i18n="nav.logout">Log out</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-4xl mx-auto px-4 py-10">
+    <h1 class="text-2xl font-bold mb-1" data-i18n="menu.title">Main Menu</h1>
+    <p class="text-slate-500 mb-8 text-sm" data-i18n="menu.subtitle">Choose a form to continue.</p>
+
+    <div class="grid sm:grid-cols-2 gap-5">
+      <!-- 1. Payment form (internal) -->
+      <a href="/index.html"
+         class="group bg-white rounded-2xl shadow-sm p-6 hover:shadow-md hover:-translate-y-0.5 transition flex items-start gap-4">
+        <div class="text-3xl">🧾</div>
+        <div>
+          <h2 class="font-semibold text-lg group-hover:text-emerald-700" data-i18n="menu.payment_title">Payment Form</h2>
+          <p class="text-sm text-slate-500 mt-1" data-i18n="menu.payment_desc">Submit monthly rent, utilities and additional bills.</p>
+        </div>
+      </a>
+
+      <!-- 2. Repair form (external) -->
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSf47MGX6GxYB3BtEuK6j62gsxTc6gnDrkrNIwwIo7mkc7zLWQ/viewform?usp=share_link&ouid=105793855380136990442"
+         target="_blank" rel="noopener"
+         class="group bg-white rounded-2xl shadow-sm p-6 hover:shadow-md hover:-translate-y-0.5 transition flex items-start gap-4">
+        <div class="text-3xl">🔧</div>
+        <div>
+          <h2 class="font-semibold text-lg group-hover:text-emerald-700"><span data-i18n="menu.repair_title">Repair Form</span> <span class="text-xs text-slate-400">↗</span></h2>
+          <p class="text-sm text-slate-500 mt-1" data-i18n="menu.repair_desc">Report a maintenance or repair request.</p>
+        </div>
+      </a>
+
+      <!-- 3. Reservation form (external) -->
+      <a href="https://jplakeviewreservation.netlify.app"
+         target="_blank" rel="noopener"
+         class="group bg-white rounded-2xl shadow-sm p-6 hover:shadow-md hover:-translate-y-0.5 transition flex items-start gap-4">
+        <div class="text-3xl">📅</div>
+        <div>
+          <h2 class="font-semibold text-lg group-hover:text-emerald-700"><span data-i18n="menu.reservation_title">Reservation Form</span> <span class="text-xs text-slate-400">↗</span></h2>
+          <p class="text-sm text-slate-500 mt-1" data-i18n="menu.reservation_desc">Reserve a room or facility.</p>
+        </div>
+      </a>
+
+      <!-- 4. Contract form (internal, to be built) -->
+      <a href="/contract.html"
+         class="group bg-white rounded-2xl shadow-sm p-6 hover:shadow-md hover:-translate-y-0.5 transition flex items-start gap-4">
+        <div class="text-3xl">📄</div>
+        <div>
+          <h2 class="font-semibold text-lg group-hover:text-emerald-700" data-i18n="menu.contract_title">Contract Form</h2>
+          <p class="text-sm text-slate-500 mt-1" data-i18n="menu.contract_desc">Termination and continuation of contract.</p>
+        </div>
+      </a>
+    </div>
+  </main>
+</body>
+</html>

@@ -6,65 +6,69 @@
   <title>Rooms (Database 1)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="/auth.js"></script>
+  <script src="/i18n.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen">
   <nav class="bg-slate-900 text-white">
     <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-      <span id="navHeading" class="font-semibold"></span>
+      <a href="/menu.html" id="navHeading" class="font-semibold hover:underline"></a>
       <div class="flex items-center gap-4 text-sm">
-        <a href="/" class="hover:underline text-slate-300">Payment Form</a>
-        <a href="/rooms.html" class="nav-admin hover:underline font-medium">Rooms (DB1)</a>
-        <a href="/records.html" class="nav-admin hover:underline text-slate-300">Records (DB2)</a>
-        <a href="/users.html" class="nav-admin hover:underline text-slate-300">Users (DB3)</a>
-        <button id="logoutBtn" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1">Log out</button>
+        <a href="/menu.html" class="hover:underline text-slate-300" data-i18n="nav.menu">Menu</a>
+        <a href="/" class="hover:underline text-slate-300" data-i18n="nav.payment">Payment Form</a>
+        <a href="/rooms.html" class="nav-admin hover:underline font-medium" data-i18n="nav.rooms">Rooms (DB1)</a>
+        <a href="/records.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.records">Records (DB2)</a>
+        <a href="/users.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.users">Users (DB3)</a>
+        <a href="/contracts.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.contracts">Contracts (DB4)</a>
+        <button id="langToggle" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1">EN</button>
+        <button id="logoutBtn" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1" data-i18n="nav.logout">Log out</button>
       </div>
     </div>
   </nav>
 
   <main class="max-w-3xl mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold mb-1">Room Configuration · Database 1</h1>
-    <p class="text-slate-500 mb-6 text-sm">Set the monthly rent and fixed additional bills per room. A bill set to 0 will be hidden on the payment form.</p>
+    <h1 class="text-2xl font-bold mb-1" data-i18n="rooms.title">Room Configuration · Database 1</h1>
+    <p class="text-slate-500 mb-6 text-sm" data-i18n="rooms.subtitle">Set the monthly rent and fixed additional bills per room. A bill set to 0 will be hidden on the payment form.</p>
 
     <form id="roomForm" class="bg-white rounded-xl shadow-sm p-5 grid sm:grid-cols-2 gap-4 mb-8">
       <div>
-        <label class="block text-sm font-medium mb-1">Room number</label>
+        <label class="block text-sm font-medium mb-1" data-i18n="rooms.room_number">Room number</label>
         <input id="room_number" required class="w-full border rounded-lg px-3 py-2" placeholder="101" />
-        <p class="text-xs text-slate-400 mt-1">Enter an existing room number to load &amp; edit its data.</p>
+        <p class="text-xs text-slate-400 mt-1" data-i18n="rooms.room_hint">Enter an existing room number to load &amp; edit its data.</p>
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1">Rent</label>
+        <label class="block text-sm font-medium mb-1" data-i18n="rooms.rent">Rent</label>
         <input id="rent" type="number" step="any" class="w-full border rounded-lg px-3 py-2" value="0" />
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1">Refrigerator bill</label>
+        <label class="block text-sm font-medium mb-1" data-i18n="rooms.refrigerator">Refrigerator bill</label>
         <input id="refrigerator_bill" type="number" step="any" class="w-full border rounded-lg px-3 py-2" value="0" />
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1">Microwave oven bill</label>
+        <label class="block text-sm font-medium mb-1" data-i18n="rooms.microwave">Microwave oven bill</label>
         <input id="microwave_bill" type="number" step="any" class="w-full border rounded-lg px-3 py-2" value="0" />
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1">Carpark bill</label>
+        <label class="block text-sm font-medium mb-1" data-i18n="rooms.carpark">Carpark bill</label>
         <input id="carpark_bill" type="number" step="any" class="w-full border rounded-lg px-3 py-2" value="0" />
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1">Common fee</label>
+        <label class="block text-sm font-medium mb-1" data-i18n="rooms.common_fee">Common fee</label>
         <input id="common_fee" type="number" step="any" class="w-full border rounded-lg px-3 py-2" value="0" />
       </div>
 
       <!-- Other bills: up to 4, each annotated with what it is for -->
       <div class="sm:col-span-2">
         <div class="flex items-center justify-between mb-1">
-          <label class="block text-sm font-medium">Other bills <span class="text-slate-400 font-normal">(up to 4)</span></label>
+          <label class="block text-sm font-medium"><span data-i18n="rooms.other_bills">Other bills</span> <span class="text-slate-400 font-normal" data-i18n="rooms.other_max">(up to 4)</span></label>
           <button type="button" id="addOtherBtn"
-                  class="text-sm bg-slate-200 hover:bg-slate-300 rounded-lg px-3 py-1">+ Add other bill</button>
+                  class="text-sm bg-slate-200 hover:bg-slate-300 rounded-lg px-3 py-1" data-i18n="rooms.add_other">+ Add other bill</button>
         </div>
         <div id="otherBills" class="space-y-2"></div>
       </div>
 
       <div class="sm:col-span-2 flex items-center gap-3">
-        <button class="bg-slate-900 hover:bg-slate-700 text-white font-semibold px-6 py-2.5 rounded-xl">Save room</button>
-        <button type="button" id="clearBtn" class="text-sm text-slate-500 hover:underline">Clear</button>
+        <button class="bg-slate-900 hover:bg-slate-700 text-white font-semibold px-6 py-2.5 rounded-xl" data-i18n="rooms.save">Save room</button>
+        <button type="button" id="clearBtn" class="text-sm text-slate-500 hover:underline" data-i18n="rooms.clear">Clear</button>
         <span id="status" class="text-sm"></span>
       </div>
     </form>
@@ -73,13 +77,13 @@
       <table class="w-full text-sm">
         <thead class="bg-slate-50 text-slate-500 text-left">
           <tr>
-            <th class="px-4 py-2">Room</th>
-            <th class="px-4 py-2">Rent</th>
-            <th class="px-4 py-2">Fridge</th>
-            <th class="px-4 py-2">Microwave</th>
-            <th class="px-4 py-2">Carpark</th>
-            <th class="px-4 py-2">Common</th>
-            <th class="px-4 py-2">Other bills</th>
+            <th class="px-4 py-2" data-i18n="rooms.th_room">Room</th>
+            <th class="px-4 py-2" data-i18n="rooms.th_rent">Rent</th>
+            <th class="px-4 py-2" data-i18n="rooms.th_fridge">Fridge</th>
+            <th class="px-4 py-2" data-i18n="rooms.th_microwave">Microwave</th>
+            <th class="px-4 py-2" data-i18n="rooms.th_carpark">Carpark</th>
+            <th class="px-4 py-2" data-i18n="rooms.th_common">Common</th>
+            <th class="px-4 py-2" data-i18n="rooms.th_other">Other bills</th>
             <th class="px-4 py-2"></th>
           </tr>
         </thead>
@@ -106,9 +110,9 @@
       const row = document.createElement('div');
       row.className = 'flex gap-2 items-center other-row';
       row.innerHTML = `
-        <input class="other-label flex-1 border rounded-lg px-3 py-2" placeholder="What is this bill for?" />
-        <input class="other-amount w-32 border rounded-lg px-3 py-2" type="number" step="any" placeholder="Amount" />
-        <button type="button" class="other-remove text-red-600 hover:underline text-sm px-2">Remove</button>`;
+        <input class="other-label flex-1 border rounded-lg px-3 py-2" placeholder="${I18n.t('rooms.other_label_ph')}" />
+        <input class="other-amount w-32 border rounded-lg px-3 py-2" type="number" step="any" placeholder="${I18n.t('rooms.amount_ph')}" />
+        <button type="button" class="other-remove text-red-600 hover:underline text-sm px-2">${I18n.t('rooms.remove')}</button>`;
       row.querySelector('.other-label').value = label;
       row.querySelector('.other-amount').value = amount;
       row.querySelector('.other-remove').addEventListener('click', () => { row.remove(); refreshAddBtn(); });
@@ -138,13 +142,13 @@
       const body = $('roomRows');
       body.innerHTML = '';
       if (!rooms.length) {
-        body.innerHTML = '<tr><td colspan="8" class="px-4 py-6 text-center text-slate-400">No rooms yet.</td></tr>';
+        body.innerHTML = `<tr><td colspan="8" class="px-4 py-6 text-center text-slate-400">${I18n.t('rooms.none')}</td></tr>`;
         return;
       }
       for (const r of rooms) {
         const others = Array.isArray(r.other_bills) ? r.other_bills : [];
         const othersHtml = others.length
-          ? others.map((o) => `${o.label || 'Other'}: ${fmt(o.amount)}`).join('<br>')
+          ? others.map((o) => `${o.label || I18n.t('item.other')}: ${fmt(o.amount)}`).join('<br>')
           : '<span class="text-slate-400">—</span>';
         const tr = document.createElement('tr');
         tr.className = 'border-t';
@@ -157,8 +161,8 @@
           <td class="px-4 py-2">${fmt(r.common_fee)}</td>
           <td class="px-4 py-2 text-xs">${othersHtml}</td>
           <td class="px-4 py-2 text-right whitespace-nowrap">
-            <button class="text-blue-600 hover:underline mr-3" data-edit='${JSON.stringify(r)}'>Edit</button>
-            <button class="text-red-600 hover:underline" data-del="${r.room_number}">Delete</button>
+            <button class="text-blue-600 hover:underline mr-3" data-edit='${JSON.stringify(r)}'>${I18n.t('rooms.edit')}</button>
+            <button class="text-red-600 hover:underline" data-del="${r.room_number}">${I18n.t('rooms.delete')}</button>
           </td>`;
         body.appendChild(tr);
       }
@@ -200,10 +204,10 @@
       const match = roomsCache.find((r) => String(r.room_number) === rn);
       if (match) {
         applyRoomData(match);
-        $('status').innerHTML = '<span class="text-blue-600">Existing room loaded — editing.</span>';
+        $('status').innerHTML = `<span class="text-blue-600">${I18n.t('rooms.loaded')}</span>`;
       } else {
         resetFields();
-        $('status').innerHTML = '<span class="text-slate-400">New room.</span>';
+        $('status').innerHTML = `<span class="text-slate-400">${I18n.t('rooms.newroom')}</span>`;
       }
     }
     $('room_number').addEventListener('change', onRoomNumberEntered);
@@ -223,7 +227,7 @@
     }
 
     async function delRoom(roomNumber) {
-      if (!confirm(`Delete room ${roomNumber}?`)) return;
+      if (!confirm(I18n.t('rooms.confirm_del', { x: roomNumber }))) return;
       await fetch('/api/rooms', {
         method: 'DELETE',
         headers: { 'content-type': 'application/json' },
@@ -236,7 +240,7 @@
 
     $('roomForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      $('status').textContent = 'Saving…';
+      $('status').textContent = I18n.t('rooms.saving');
       const payload = {
         room_number: $('room_number').value,
         rent: $('rent').value,
@@ -254,7 +258,7 @@
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Failed');
-        $('status').innerHTML = '<span class="text-emerald-600">Saved ✓</span>';
+        $('status').innerHTML = `<span class="text-emerald-600">${I18n.t('rooms.saved')}</span>`;
         clearForm();
         loadRooms();
       } catch (err) {
@@ -263,6 +267,16 @@
     });
 
     loadRooms();
+
+    // Re-render dynamic content (table + existing other-bill row placeholders) on language change.
+    document.addEventListener('i18n:change', () => {
+      $('otherBills').querySelectorAll('.other-row').forEach((row) => {
+        row.querySelector('.other-label').placeholder = I18n.t('rooms.other_label_ph');
+        row.querySelector('.other-amount').placeholder = I18n.t('rooms.amount_ph');
+        row.querySelector('.other-remove').textContent = I18n.t('rooms.remove');
+      });
+      loadRooms();
+    });
   </script>
 </body>
 </html>

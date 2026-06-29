@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contracts (Database 4)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/auth.js"></script>
+  <script src="/i18n.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+  <nav class="bg-slate-900 text-white">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/menu.html" id="navHeading" class="font-semibold hover:underline"></a>
+      <div class="flex items-center gap-4 text-sm">
+        <a href="/menu.html" class="hover:underline text-slate-300" data-i18n="nav.menu">Menu</a>
+        <a href="/rooms.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.rooms">Rooms (DB1)</a>
+        <a href="/records.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.records">Records (DB2)</a>
+        <a href="/users.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.users">Users (DB3)</a>
+        <a href="/contracts.html" class="nav-admin hover:underline font-medium" data-i18n="nav.contracts">Contracts (DB4)</a>
+        <button id="langToggle" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1">EN</button>
+        <button id="logoutBtn" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1" data-i18n="nav.logout">Log out</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-1" data-i18n="cm.title">Contract Management · Database 4</h1>
+    <p class="text-slate-500 mb-6 text-sm" data-i18n="cm.subtitle">Add or edit a contract for each room.</p>
+
+    <form id="contractForm" class="bg-white rounded-xl shadow-sm p-5 grid sm:grid-cols-2 gap-4 mb-8">
+      <div>
+        <label class="block text-sm font-medium mb-1" data-i18n="cm.room">Room number</label>
+        <input id="room_number" required class="w-full border rounded-lg px-3 py-2" placeholder="101" />
+        <p class="text-xs text-slate-400 mt-1" data-i18n="cm.room_hint">Enter an existing room to load &amp; edit its contract.</p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" data-i18n="con.user_id">User ID</label>
+        <input id="user_id" class="w-full border rounded-lg px-3 py-2" placeholder="201" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" data-i18n="con.start">Start date</label>
+        <input id="start_date" type="date" class="w-full border rounded-lg px-3 py-2" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" data-i18n="con.end">End date</label>
+        <input id="end_date" type="date" class="w-full border rounded-lg px-3 py-2" />
+      </div>
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium mb-1" data-i18n="con.contract_pdf_url">Contract PDF link</label>
+        <input id="contract_pdf_url" type="url" class="w-full border rounded-lg px-3 py-2" placeholder="https://…" />
+      </div>
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium mb-1" data-i18n="con.furniture_pdf_url">Furniture form PDF link</label>
+        <input id="furniture_pdf_url" type="url" class="w-full border rounded-lg px-3 py-2" placeholder="https://…" />
+      </div>
+      <div class="sm:col-span-2 flex items-center gap-3">
+        <button class="bg-slate-900 hover:bg-slate-700 text-white font-semibold px-6 py-2.5 rounded-xl" data-i18n="con.save">Save contract</button>
+        <button type="button" id="clearBtn" class="text-sm text-slate-500 hover:underline" data-i18n="cm.clear">Clear</button>
+        <span id="status" class="text-sm"></span>
+      </div>
+    </form>
+
+    <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
+      <table class="w-full text-sm whitespace-nowrap">
+        <thead class="bg-slate-50 text-slate-500 text-left">
+          <tr>
+            <th class="px-4 py-2" data-i18n="cm.th_room">Room</th>
+            <th class="px-4 py-2" data-i18n="cm.th_user">User</th>
+            <th class="px-4 py-2" data-i18n="cm.th_start">Start</th>
+            <th class="px-4 py-2" data-i18n="cm.th_end">End</th>
+            <th class="px-4 py-2" data-i18n="cm.th_docs">PDFs</th>
+            <th class="px-4 py-2"></th>
+          </tr>
+        </thead>
+        <tbody id="contractRows"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    let contractsCache = [];
+
+    async function loadContracts() {
+      const res = await fetch('/api/contracts');
+      const list = await res.json();
+      contractsCache = Array.isArray(list) ? list : [];
+      const body = $('contractRows');
+      body.innerHTML = '';
+      if (!contractsCache.length) {
+        body.innerHTML = `<tr><td colspan="6" class="px-4 py-6 text-center text-slate-400">${I18n.t('cm.none')}</td></tr>`;
+        return;
+      }
+      for (const c of contractsCache) {
+        const docs = [];
+        if (c.contract_pdf_url) docs.push(`<a href="${esc(c.contract_pdf_url)}" target="_blank" rel="noopener" class="text-blue-600 hover:underline">${I18n.t('cm.contract')}</a>`);
+        if (c.furniture_pdf_url) docs.push(`<a href="${esc(c.furniture_pdf_url)}" target="_blank" rel="noopener" class="text-blue-600 hover:underline">${I18n.t('cm.furniture')}</a>`);
+        const tr = document.createElement('tr');
+        tr.className = 'border-t';
+        tr.innerHTML = `
+          <td class="px-4 py-2 font-medium">${esc(c.room_number)}</td>
+          <td class="px-4 py-2">${esc(c.user_id || '—')}</td>
+          <td class="px-4 py-2">${esc(c.start_date || '—')}</td>
+          <td class="px-4 py-2">${esc(c.end_date || '—')}</td>
+          <td class="px-4 py-2 text-xs">${docs.join(' · ') || '<span class="text-slate-400">—</span>'}</td>
+          <td class="px-4 py-2 text-right whitespace-nowrap">
+            <button class="text-blue-600 hover:underline mr-3" data-edit="${esc(c.room_number)}">${I18n.t('cm.edit')}</button>
+            <button class="text-red-600 hover:underline" data-del="${esc(c.room_number)}">${I18n.t('cm.delete')}</button>
+          </td>`;
+        body.appendChild(tr);
+      }
+      body.querySelectorAll('[data-edit]').forEach((b) =>
+        b.addEventListener('click', () => fillForm(b.dataset.edit)));
+      body.querySelectorAll('[data-del]').forEach((b) =>
+        b.addEventListener('click', () => delContract(b.dataset.del)));
+    }
+
+    function applyData(c) {
+      $('user_id').value = c.user_id || '';
+      $('start_date').value = c.start_date || '';
+      $('end_date').value = c.end_date || '';
+      $('contract_pdf_url').value = c.contract_pdf_url || '';
+      $('furniture_pdf_url').value = c.furniture_pdf_url || '';
+    }
+    function resetFields() {
+      ['user_id','start_date','end_date','contract_pdf_url','furniture_pdf_url']
+        .forEach((id) => ($(id).value = ''));
+    }
+
+    function fillForm(room) {
+      const c = contractsCache.find((x) => String(x.room_number) === String(room));
+      if (!c) return;
+      $('room_number').value = c.room_number;
+      applyData(c);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function onRoomEntered() {
+      const room = $('room_number').value.trim();
+      if (!room) { $('status').textContent = ''; return; }
+      const c = contractsCache.find((x) => String(x.room_number) === room);
+      if (c) {
+        applyData(c);
+        $('status').innerHTML = `<span class="text-blue-600">${I18n.t('cm.loaded')}</span>`;
+      } else {
+        resetFields();
+        $('status').innerHTML = `<span class="text-slate-400">${I18n.t('cm.newc')}</span>`;
+      }
+    }
+    $('room_number').addEventListener('change', onRoomEntered);
+
+    function clearForm() { $('contractForm').reset(); resetFields(); $('status').textContent = ''; }
+    $('clearBtn').addEventListener('click', clearForm);
+
+    async function delContract(room) {
+      if (!confirm(I18n.t('cm.confirm_del', { x: room }))) return;
+      await fetch('/api/contracts', {
+        method: 'DELETE', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ room_number: room }),
+      });
+      loadContracts();
+    }
+
+    // Enter must not auto-save.
+    $('contractForm').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); e.target.blur(); }
+    });
+
+    $('contractForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      $('status').textContent = I18n.t('con.saving');
+      const payload = {
+        room_number: $('room_number').value.trim(),
+        user_id: $('user_id').value.trim(),
+        start_date: $('start_date').value || null,
+        end_date: $('end_date').value || null,
+        contract_pdf_url: $('contract_pdf_url').value.trim() || null,
+        furniture_pdf_url: $('furniture_pdf_url').value.trim() || null,
+      };
+      try {
+        const res = await fetch('/api/contracts', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed');
+        $('status').innerHTML = `<span class="text-emerald-600">${I18n.t('con.saved')}</span>`;
+        clearForm();
+        loadContracts();
+      } catch (err) {
+        $('status').innerHTML = `<span class="text-red-600">${esc(err.message)}</span>`;
+      }
+    });
+
+    loadContracts();
+    document.addEventListener('i18n:change', loadContracts);
+  </script>
+</body>
+</html>

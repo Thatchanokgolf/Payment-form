@@ -1,0 +1,489 @@
+// Lightweight i18n for the dorm app. Default language is Thai ('th').
+// Static text: add data-i18n="key" (textContent), data-i18n-ph="key" (placeholder),
+//   or data-i18n-html="key" (innerHTML).
+// Dynamic text (in page scripts): use window.I18n.t('key', { vars }).
+// Pages can re-render on language change by listening for 'i18n:change'.
+(function () {
+  const KEY = 'dormLang';
+  const DEFAULT = 'th';
+
+  const DICT = {
+    en: {
+      // nav
+      'nav.menu': 'Menu',
+      'nav.payment': 'Payment Form',
+      'nav.rooms': 'Rooms (DB1)',
+      'nav.records': 'Records (DB2)',
+      'nav.users': 'Users (DB3)',
+      'nav.contracts': 'Contracts (DB4)',
+      'nav.logout': 'Log out',
+
+      // login
+      'login.subtitle': 'Sign in to continue',
+      'login.id': 'ID',
+      'login.password': 'Password',
+      'login.signin': 'Sign in',
+      'login.error': 'Invalid ID or password.',
+
+      // menu
+      'menu.title': 'Main Menu',
+      'menu.subtitle': 'Choose a form to continue.',
+      'menu.payment_title': 'Payment Form',
+      'menu.payment_desc': 'Submit monthly rent, utilities and additional bills.',
+      'menu.repair_title': 'Repair Form',
+      'menu.repair_desc': 'Report a maintenance or repair request.',
+      'menu.reservation_title': 'Reservation Form',
+      'menu.reservation_desc': 'Reserve a room or facility.',
+      'menu.contract_title': 'Contract Form',
+      'menu.contract_desc': 'Termination and continuation of contract.',
+
+      // payment form
+      'pay.title': 'Monthly Payment Form',
+      'pay.subtitle': 'Electricity = (meter difference) × 8 · Water = (meter difference) × 20',
+      'pay.room': 'Room Number',
+      'pay.room_ph': 'Select a room…',
+      'pay.bill_month': 'Bill Month',
+      'pay.rent': 'Rent (this month)',
+      'pay.rent_note': 'Loaded from room configuration (Database 1).',
+      'pay.electricity': '⚡ Electricity',
+      'pay.electric_photo': 'Electric bill photo',
+      'pay.prev_meter': 'Previous meter',
+      'pay.prev_note': 'From last record · default 0',
+      'pay.curr_meter': 'This month meter',
+      'pay.electric_bill': 'Electric bill',
+      'pay.water': '💧 Water',
+      'pay.water_photo': 'Water bill photo',
+      'pay.water_bill': 'Water bill',
+      'pay.common_fee': 'Common fee',
+      'pay.additional': '➕ Additional bills',
+      'pay.total': 'Total amount due',
+      'pay.slip_photo': 'Bank slip photo',
+      'pay.submit': 'Submit',
+      'pay.pick_room': 'Pick a room first.',
+      'pay.uploading': 'Uploading…',
+      'pay.saved': 'Saved ✓ (total {x})',
+      'pay.no_rooms_admin': 'No rooms yet — add one in <a class="underline" href="/rooms.html">Rooms (DB1)</a>.',
+      'pay.no_room_user': 'No room is configured for your account yet. Please contact the administrator.',
+
+      // item labels (shared)
+      'item.refrigerator': 'Refrigerator',
+      'item.microwave': 'Microwave oven',
+      'item.carpark': 'Carpark',
+      'item.common_fee': 'Common fee',
+      'item.other': 'Other',
+
+      // rooms (DB1)
+      'rooms.title': 'Room Configuration · Database 1',
+      'rooms.subtitle': 'Set the monthly rent and fixed additional bills per room. A bill set to 0 will be hidden on the payment form.',
+      'rooms.room_number': 'Room number',
+      'rooms.room_hint': 'Enter an existing room number to load & edit its data.',
+      'rooms.rent': 'Rent',
+      'rooms.refrigerator': 'Refrigerator bill',
+      'rooms.microwave': 'Microwave oven bill',
+      'rooms.carpark': 'Carpark bill',
+      'rooms.common_fee': 'Common fee',
+      'rooms.other_bills': 'Other bills',
+      'rooms.other_max': '(up to 4)',
+      'rooms.add_other': '+ Add other bill',
+      'rooms.save': 'Save room',
+      'rooms.clear': 'Clear',
+      'rooms.remove': 'Remove',
+      'rooms.other_label_ph': 'What is this bill for?',
+      'rooms.amount_ph': 'Amount',
+      'rooms.th_room': 'Room',
+      'rooms.th_rent': 'Rent',
+      'rooms.th_fridge': 'Fridge',
+      'rooms.th_microwave': 'Microwave',
+      'rooms.th_carpark': 'Carpark',
+      'rooms.th_common': 'Common',
+      'rooms.th_other': 'Other bills',
+      'rooms.edit': 'Edit',
+      'rooms.delete': 'Delete',
+      'rooms.none': 'No rooms yet.',
+      'rooms.loaded': 'Existing room loaded — editing.',
+      'rooms.newroom': 'New room.',
+      'rooms.saving': 'Saving…',
+      'rooms.saved': 'Saved ✓',
+      'rooms.confirm_del': 'Delete room {x}?',
+
+      // records (DB2)
+      'rec.title': 'Submitted Records · Database 2',
+      'rec.f_room': 'Room',
+      'rec.f_all_rooms': 'All rooms',
+      'rec.f_from': 'From month',
+      'rec.f_to': 'To month',
+      'rec.apply': 'Apply',
+      'rec.clear': 'Clear',
+      'rec.tip': 'Tip: click a new meter reading to view its photo, or the Add. amount for the bill breakdown.',
+      'rec.th_date': 'Date',
+      'rec.th_room': 'Room',
+      'rec.th_month': 'Month',
+      'rec.th_rent': 'Rent',
+      'rec.th_elec': 'Elec (prev→cur)',
+      'rec.th_elecbill': 'Elec bill',
+      'rec.th_water': 'Water (prev→cur)',
+      'rec.th_waterbill': 'Water bill',
+      'rec.th_common': 'Common',
+      'rec.th_add': 'Add.',
+      'rec.th_total': 'Total',
+      'rec.count': '{n} record(s)',
+      'rec.none': 'No records match.',
+      'rec.loading': 'Loading…',
+      'rec.no_photo': 'No photo uploaded for this record.',
+      'rec.elec_photo': 'Electric meter photo',
+      'rec.water_photo': 'Water meter photo',
+      'rec.slip': 'Payment slip',
+      'rec.add_title': 'Additional bills · Room {room} · {month}',
+      'rec.total_add': 'Total additional',
+      'rec.no_add': 'No additional bills on this record.',
+
+      // users (DB3)
+      'usr.title': 'User Management · Database 3',
+      'usr.subtitle': 'Add or edit login accounts. Residents (role user) only see their own room; admins see everything.',
+      'usr.user_id': 'User ID',
+      'usr.user_hint': 'Enter an existing ID to edit it.',
+      'usr.password': 'Password',
+      'usr.password_ph': '(leave blank to keep)',
+      'usr.role': 'Role',
+      'usr.role_user': 'user (resident)',
+      'usr.role_admin': 'admin',
+      'usr.room_number': 'Room number',
+      'usr.room_hint': 'Residents only — ignored for admins.',
+      'usr.heading': 'Heading (shown top-left)',
+      'usr.save': 'Save user',
+      'usr.clear': 'Clear',
+      'usr.th_id': 'User ID',
+      'usr.th_role': 'Role',
+      'usr.th_room': 'Room',
+      'usr.th_heading': 'Heading',
+      'usr.edit': 'Edit',
+      'usr.delete': 'Delete',
+      'usr.none': 'No users yet.',
+      'usr.loaded': 'Existing user loaded — editing.',
+      'usr.newuser': 'New user.',
+      'usr.saving': 'Saving…',
+      'usr.saved': 'Saved ✓',
+      'usr.confirm_del': 'Delete user {x}?',
+
+      // contract
+      'con.title': 'Contract Form',
+      'con.subtitle': 'For termination and continuation of contract.',
+      'con.room': 'Room',
+      'con.select_room': 'Select a room…',
+      'con.no_room_user': 'No room is configured for your account yet. Please contact the administrator.',
+      'con.no_contract': 'No contract found for this room.',
+      'con.start': 'Start date',
+      'con.end': 'End date',
+      'con.documents': 'Documents',
+      'con.contract_pdf': 'Contract (PDF)',
+      'con.furniture_pdf': 'Furniture check form (PDF)',
+      'con.view': 'View',
+      'con.actions': 'Options',
+      'con.rules': 'Dormitory rules',
+      'con.extend': 'Extend contract',
+      'con.terminate': 'Terminate contract',
+      'con.edit_title': 'Edit contract (admin)',
+      'con.user_id': 'User ID',
+      'con.contract_pdf_url': 'Contract PDF link',
+      'con.furniture_pdf_url': 'Furniture form PDF link',
+      'con.save': 'Save contract',
+      'con.saving': 'Saving…',
+      'con.saved': 'Saved ✓',
+
+      // extend contract
+      'ext.title': 'Extend Contract',
+      'ext.subtitle': 'You may extend only to the end of April or May of next year.',
+      'ext.room': 'Room',
+      'ext.current_end': 'Current end date',
+      'ext.new_end': 'New end date',
+      'ext.opt_apr': '30 April {y}',
+      'ext.opt_may': '31 May {y}',
+      'ext.submit': 'Submit extension',
+      'ext.saved': 'Contract extended to {d} ✓',
+      'ext.no_contract': 'No contract found for this room.',
+      'ext.back': '← Back to contract',
+
+      // dormitory rules
+      'rul.title': 'Dormitory Rules',
+      'rul.todo': 'The dormitory rules will be added here later.',
+
+      // contract management (DB4)
+      'cm.title': 'Contract Management · Database 4',
+      'cm.subtitle': 'Add or edit a contract for each room.',
+      'cm.room': 'Room number',
+      'cm.room_hint': 'Enter an existing room to load & edit its contract.',
+      'cm.clear': 'Clear',
+      'cm.th_room': 'Room',
+      'cm.th_user': 'User',
+      'cm.th_start': 'Start',
+      'cm.th_end': 'End',
+      'cm.th_docs': 'PDFs',
+      'cm.edit': 'Edit',
+      'cm.delete': 'Delete',
+      'cm.none': 'No contracts yet.',
+      'cm.loaded': 'Existing contract loaded — editing.',
+      'cm.newc': 'New contract.',
+      'cm.confirm_del': 'Delete the contract for room {x}?',
+      'cm.contract': 'Contract',
+      'cm.furniture': 'Furniture',
+    },
+
+    th: {
+      // nav
+      'nav.menu': 'เมนู',
+      'nav.payment': 'แบบฟอร์มชำระเงิน',
+      'nav.rooms': 'ห้องพัก (DB1)',
+      'nav.records': 'บันทึก (DB2)',
+      'nav.users': 'ผู้ใช้ (DB3)',
+      'nav.contracts': 'สัญญา (DB4)',
+      'nav.logout': 'ออกจากระบบ',
+
+      // login
+      'login.subtitle': 'เข้าสู่ระบบเพื่อดำเนินการต่อ',
+      'login.id': 'รหัสผู้ใช้',
+      'login.password': 'รหัสผ่าน',
+      'login.signin': 'เข้าสู่ระบบ',
+      'login.error': 'รหัสผู้ใช้หรือรหัสผ่านไม่ถูกต้อง',
+
+      // menu
+      'menu.title': 'เมนูหลัก',
+      'menu.subtitle': 'เลือกแบบฟอร์มเพื่อดำเนินการต่อ',
+      'menu.payment_title': 'แบบฟอร์มชำระเงิน',
+      'menu.payment_desc': 'ส่งค่าเช่ารายเดือน ค่าน้ำค่าไฟ และค่าใช้จ่ายเพิ่มเติม',
+      'menu.repair_title': 'แบบฟอร์มแจ้งซ่อม',
+      'menu.repair_desc': 'แจ้งปัญหาการซ่อมบำรุง',
+      'menu.reservation_title': 'แบบฟอร์มจองห้อง',
+      'menu.reservation_desc': 'จองห้องหรือสิ่งอำนวยความสะดวก',
+      'menu.contract_title': 'แบบฟอร์มสัญญา',
+      'menu.contract_desc': 'การยกเลิกและการต่อสัญญา',
+
+      // payment form
+      'pay.title': 'แบบฟอร์มชำระเงินรายเดือน',
+      'pay.subtitle': 'ค่าไฟ = (ผลต่างมิเตอร์) × 8 · ค่าน้ำ = (ผลต่างมิเตอร์) × 20',
+      'pay.room': 'หมายเลขห้อง',
+      'pay.room_ph': 'เลือกห้อง…',
+      'pay.bill_month': 'เดือนที่เรียกเก็บ',
+      'pay.rent': 'ค่าเช่า (เดือนนี้)',
+      'pay.rent_note': 'ดึงจากการตั้งค่าห้อง (ฐานข้อมูล 1)',
+      'pay.electricity': '⚡ ค่าไฟฟ้า',
+      'pay.electric_photo': 'รูปบิลค่าไฟ',
+      'pay.prev_meter': 'มิเตอร์เดือนก่อน',
+      'pay.prev_note': 'จากบันทึกล่าสุด · ค่าเริ่มต้น 0',
+      'pay.curr_meter': 'มิเตอร์เดือนนี้',
+      'pay.electric_bill': 'ค่าไฟ',
+      'pay.water': '💧 ค่าน้ำ',
+      'pay.water_photo': 'รูปบิลค่าน้ำ',
+      'pay.water_bill': 'ค่าน้ำ',
+      'pay.common_fee': 'ค่าส่วนกลาง',
+      'pay.additional': '➕ ค่าใช้จ่ายเพิ่มเติม',
+      'pay.total': 'ยอดรวมที่ต้องชำระ',
+      'pay.slip_photo': 'รูปสลิปการโอนเงิน',
+      'pay.submit': 'ส่งข้อมูล',
+      'pay.pick_room': 'กรุณาเลือกห้องก่อน',
+      'pay.uploading': 'กำลังอัปโหลด…',
+      'pay.saved': 'บันทึกแล้ว ✓ (ยอดรวม {x})',
+      'pay.no_rooms_admin': 'ยังไม่มีห้อง — เพิ่มได้ที่ <a class="underline" href="/rooms.html">ห้องพัก (DB1)</a>',
+      'pay.no_room_user': 'ยังไม่มีการตั้งค่าห้องสำหรับบัญชีของคุณ กรุณาติดต่อผู้ดูแลระบบ',
+
+      // item labels (shared)
+      'item.refrigerator': 'ตู้เย็น',
+      'item.microwave': 'ไมโครเวฟ',
+      'item.carpark': 'ที่จอดรถ',
+      'item.common_fee': 'ค่าส่วนกลาง',
+      'item.other': 'อื่นๆ',
+
+      // rooms (DB1)
+      'rooms.title': 'การตั้งค่าห้อง · ฐานข้อมูล 1',
+      'rooms.subtitle': 'ตั้งค่าค่าเช่ารายเดือนและค่าใช้จ่ายคงที่ต่อห้อง ค่าใช้จ่ายที่ตั้งเป็น 0 จะถูกซ่อนในแบบฟอร์มชำระเงิน',
+      'rooms.room_number': 'หมายเลขห้อง',
+      'rooms.room_hint': 'ใส่หมายเลขห้องที่มีอยู่เพื่อโหลดและแก้ไขข้อมูล',
+      'rooms.rent': 'ค่าเช่า',
+      'rooms.refrigerator': 'ค่าตู้เย็น',
+      'rooms.microwave': 'ค่าไมโครเวฟ',
+      'rooms.carpark': 'ค่าที่จอดรถ',
+      'rooms.common_fee': 'ค่าส่วนกลาง',
+      'rooms.other_bills': 'ค่าใช้จ่ายอื่นๆ',
+      'rooms.other_max': '(สูงสุด 4 รายการ)',
+      'rooms.add_other': '+ เพิ่มค่าใช้จ่ายอื่น',
+      'rooms.save': 'บันทึกห้อง',
+      'rooms.clear': 'ล้าง',
+      'rooms.remove': 'ลบ',
+      'rooms.other_label_ph': 'ค่าใช้จ่ายนี้สำหรับอะไร?',
+      'rooms.amount_ph': 'จำนวนเงิน',
+      'rooms.th_room': 'ห้อง',
+      'rooms.th_rent': 'ค่าเช่า',
+      'rooms.th_fridge': 'ตู้เย็น',
+      'rooms.th_microwave': 'ไมโครเวฟ',
+      'rooms.th_carpark': 'ที่จอดรถ',
+      'rooms.th_common': 'ส่วนกลาง',
+      'rooms.th_other': 'ค่าใช้จ่ายอื่นๆ',
+      'rooms.edit': 'แก้ไข',
+      'rooms.delete': 'ลบ',
+      'rooms.none': 'ยังไม่มีห้อง',
+      'rooms.loaded': 'โหลดข้อมูลห้องที่มีอยู่ — กำลังแก้ไข',
+      'rooms.newroom': 'ห้องใหม่',
+      'rooms.saving': 'กำลังบันทึก…',
+      'rooms.saved': 'บันทึกแล้ว ✓',
+      'rooms.confirm_del': 'ลบห้อง {x} หรือไม่?',
+
+      // records (DB2)
+      'rec.title': 'รายการที่ส่ง · ฐานข้อมูล 2',
+      'rec.f_room': 'ห้อง',
+      'rec.f_all_rooms': 'ทุกห้อง',
+      'rec.f_from': 'ตั้งแต่เดือน',
+      'rec.f_to': 'ถึงเดือน',
+      'rec.apply': 'ค้นหา',
+      'rec.clear': 'ล้าง',
+      'rec.tip': 'เคล็ดลับ: คลิกที่เลขมิเตอร์เดือนนี้เพื่อดูรูป หรือคลิกยอด "เพิ่มเติม" เพื่อดูรายละเอียดบิล',
+      'rec.th_date': 'วันที่',
+      'rec.th_room': 'ห้อง',
+      'rec.th_month': 'เดือน',
+      'rec.th_rent': 'ค่าเช่า',
+      'rec.th_elec': 'ไฟ (ก่อน→ปัจจุบัน)',
+      'rec.th_elecbill': 'ค่าไฟ',
+      'rec.th_water': 'น้ำ (ก่อน→ปัจจุบัน)',
+      'rec.th_waterbill': 'ค่าน้ำ',
+      'rec.th_common': 'ส่วนกลาง',
+      'rec.th_add': 'เพิ่มเติม',
+      'rec.th_total': 'รวม',
+      'rec.count': '{n} รายการ',
+      'rec.none': 'ไม่พบรายการที่ตรงกัน',
+      'rec.loading': 'กำลังโหลด…',
+      'rec.no_photo': 'ไม่มีรูปสำหรับรายการนี้',
+      'rec.elec_photo': 'รูปมิเตอร์ไฟ',
+      'rec.water_photo': 'รูปมิเตอร์น้ำ',
+      'rec.slip': 'สลิปการชำระเงิน',
+      'rec.add_title': 'ค่าใช้จ่ายเพิ่มเติม · ห้อง {room} · {month}',
+      'rec.total_add': 'รวมค่าใช้จ่ายเพิ่มเติม',
+      'rec.no_add': 'ไม่มีค่าใช้จ่ายเพิ่มเติมในรายการนี้',
+
+      // users (DB3)
+      'usr.title': 'การจัดการผู้ใช้ · ฐานข้อมูล 3',
+      'usr.subtitle': 'เพิ่มหรือแก้ไขบัญชีผู้ใช้ ผู้พักอาศัย (บทบาท user) จะเห็นเฉพาะห้องของตน ส่วนผู้ดูแลระบบเห็นทั้งหมด',
+      'usr.user_id': 'รหัสผู้ใช้',
+      'usr.user_hint': 'ใส่รหัสที่มีอยู่เพื่อแก้ไข',
+      'usr.password': 'รหัสผ่าน',
+      'usr.password_ph': '(เว้นว่างเพื่อคงรหัสเดิม)',
+      'usr.role': 'บทบาท',
+      'usr.role_user': 'user (ผู้พักอาศัย)',
+      'usr.role_admin': 'admin (ผู้ดูแล)',
+      'usr.room_number': 'หมายเลขห้อง',
+      'usr.room_hint': 'สำหรับผู้พักอาศัยเท่านั้น — ผู้ดูแลไม่ต้องระบุ',
+      'usr.heading': 'หัวข้อ (แสดงมุมซ้ายบน)',
+      'usr.save': 'บันทึกผู้ใช้',
+      'usr.clear': 'ล้าง',
+      'usr.th_id': 'รหัสผู้ใช้',
+      'usr.th_role': 'บทบาท',
+      'usr.th_room': 'ห้อง',
+      'usr.th_heading': 'หัวข้อ',
+      'usr.edit': 'แก้ไข',
+      'usr.delete': 'ลบ',
+      'usr.none': 'ยังไม่มีผู้ใช้',
+      'usr.loaded': 'โหลดข้อมูลผู้ใช้ที่มีอยู่ — กำลังแก้ไข',
+      'usr.newuser': 'ผู้ใช้ใหม่',
+      'usr.saving': 'กำลังบันทึก…',
+      'usr.saved': 'บันทึกแล้ว ✓',
+      'usr.confirm_del': 'ลบผู้ใช้ {x} หรือไม่?',
+
+      // contract
+      'con.title': 'แบบฟอร์มสัญญา',
+      'con.subtitle': 'สำหรับการยกเลิกและการต่อสัญญา',
+      'con.room': 'ห้อง',
+      'con.select_room': 'เลือกห้อง…',
+      'con.no_room_user': 'ยังไม่มีการตั้งค่าห้องสำหรับบัญชีของคุณ กรุณาติดต่อผู้ดูแลระบบ',
+      'con.no_contract': 'ไม่พบสัญญาสำหรับห้องนี้',
+      'con.start': 'วันที่เริ่มสัญญา',
+      'con.end': 'วันที่สิ้นสุดสัญญา',
+      'con.documents': 'เอกสาร',
+      'con.contract_pdf': 'สัญญา (PDF)',
+      'con.furniture_pdf': 'แบบฟอร์มตรวจเฟอร์นิเจอร์ (PDF)',
+      'con.view': 'ดู',
+      'con.actions': 'ตัวเลือก',
+      'con.rules': 'กฎระเบียบหอพัก',
+      'con.extend': 'ต่อสัญญา',
+      'con.terminate': 'ยกเลิกสัญญา',
+      'con.edit_title': 'แก้ไขสัญญา (ผู้ดูแล)',
+      'con.user_id': 'รหัสผู้ใช้',
+      'con.contract_pdf_url': 'ลิงก์ PDF สัญญา',
+      'con.furniture_pdf_url': 'ลิงก์ PDF แบบฟอร์มเฟอร์นิเจอร์',
+      'con.save': 'บันทึกสัญญา',
+      'con.saving': 'กำลังบันทึก…',
+      'con.saved': 'บันทึกแล้ว ✓',
+
+      // extend contract
+      'ext.title': 'ต่อสัญญา',
+      'ext.subtitle': 'สามารถต่อสัญญาได้ถึงสิ้นเดือนเมษายนหรือพฤษภาคมของปีถัดไปเท่านั้น',
+      'ext.room': 'ห้อง',
+      'ext.current_end': 'วันสิ้นสุดสัญญาปัจจุบัน',
+      'ext.new_end': 'วันสิ้นสุดสัญญาใหม่',
+      'ext.opt_apr': '30 เมษายน {y}',
+      'ext.opt_may': '31 พฤษภาคม {y}',
+      'ext.submit': 'ส่งคำขอต่อสัญญา',
+      'ext.saved': 'ต่อสัญญาถึงวันที่ {d} แล้ว ✓',
+      'ext.no_contract': 'ไม่พบสัญญาสำหรับห้องนี้',
+      'ext.back': '← กลับไปหน้าสัญญา',
+
+      // dormitory rules
+      'rul.title': 'กฎระเบียบหอพัก',
+      'rul.todo': 'กฎระเบียบหอพักจะถูกเพิ่มที่นี่ภายหลัง',
+
+      // contract management (DB4)
+      'cm.title': 'การจัดการสัญญา · ฐานข้อมูล 4',
+      'cm.subtitle': 'เพิ่มหรือแก้ไขสัญญาของแต่ละห้อง',
+      'cm.room': 'หมายเลขห้อง',
+      'cm.room_hint': 'ใส่หมายเลขห้องที่มีอยู่เพื่อโหลดและแก้ไขสัญญา',
+      'cm.clear': 'ล้าง',
+      'cm.th_room': 'ห้อง',
+      'cm.th_user': 'ผู้ใช้',
+      'cm.th_start': 'เริ่ม',
+      'cm.th_end': 'สิ้นสุด',
+      'cm.th_docs': 'เอกสาร',
+      'cm.edit': 'แก้ไข',
+      'cm.delete': 'ลบ',
+      'cm.none': 'ยังไม่มีสัญญา',
+      'cm.loaded': 'โหลดสัญญาที่มีอยู่ — กำลังแก้ไข',
+      'cm.newc': 'สัญญาใหม่',
+      'cm.confirm_del': 'ลบสัญญาของห้อง {x} หรือไม่?',
+      'cm.contract': 'สัญญา',
+      'cm.furniture': 'เฟอร์นิเจอร์',
+    },
+  };
+
+  const getLang = () => localStorage.getItem(KEY) || DEFAULT;
+
+  function t(key, vars) {
+    const l = getLang();
+    let s = (DICT[l] && DICT[l][key]) || DICT.en[key] || key;
+    if (vars) for (const k in vars) s = s.split('{' + k + '}').join(vars[k]);
+    return s;
+  }
+
+  function apply(root) {
+    root = root || document;
+    document.documentElement.lang = getLang();
+    root.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.getAttribute('data-i18n')); });
+    root.querySelectorAll('[data-i18n-ph]').forEach((el) => { el.setAttribute('placeholder', t(el.getAttribute('data-i18n-ph'))); });
+    root.querySelectorAll('[data-i18n-html]').forEach((el) => { el.innerHTML = t(el.getAttribute('data-i18n-html')); });
+  }
+
+  function updateToggle() {
+    const b = document.getElementById('langToggle');
+    if (b) b.textContent = getLang() === 'th' ? 'EN' : 'ไทย';
+  }
+
+  function setLang(l) {
+    localStorage.setItem(KEY, l);
+    apply();
+    updateToggle();
+    document.dispatchEvent(new CustomEvent('i18n:change', { detail: { lang: l } }));
+  }
+
+  window.I18n = { getLang, setLang, t, apply };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    apply();
+    updateToggle();
+    const b = document.getElementById('langToggle');
+    if (b) b.addEventListener('click', () => setLang(getLang() === 'th' ? 'en' : 'th'));
+  });
+})();

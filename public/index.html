@@ -6,37 +6,41 @@
   <title>Dormitory Rent — Payment Form</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="/auth.js"></script>
+  <script src="/i18n.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen">
   <!-- Nav -->
   <nav class="bg-slate-900 text-white">
     <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-      <span id="navHeading" class="font-semibold"></span>
+      <a href="/menu.html" id="navHeading" class="font-semibold hover:underline"></a>
       <div class="flex items-center gap-4 text-sm">
-        <a href="/" class="hover:underline font-medium">Payment Form</a>
-        <a href="/rooms.html" class="nav-admin hover:underline text-slate-300">Rooms (DB1)</a>
-        <a href="/records.html" class="nav-admin hover:underline text-slate-300">Records (DB2)</a>
-        <a href="/users.html" class="nav-admin hover:underline text-slate-300">Users (DB3)</a>
-        <button id="logoutBtn" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1">Log out</button>
+        <a href="/menu.html" class="hover:underline text-slate-300" data-i18n="nav.menu">Menu</a>
+        <a href="/" class="hover:underline font-medium" data-i18n="nav.payment">Payment Form</a>
+        <a href="/rooms.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.rooms">Rooms (DB1)</a>
+        <a href="/records.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.records">Records (DB2)</a>
+        <a href="/users.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.users">Users (DB3)</a>
+        <a href="/contracts.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.contracts">Contracts (DB4)</a>
+        <button id="langToggle" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1">EN</button>
+        <button id="logoutBtn" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1" data-i18n="nav.logout">Log out</button>
       </div>
     </div>
   </nav>
 
   <main class="max-w-3xl mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold mb-1">Monthly Payment Form</h1>
-    <p class="text-slate-500 mb-6 text-sm">Electricity = (meter difference) × 8 · Water = (meter difference) × 20</p>
+    <h1 class="text-2xl font-bold mb-1" data-i18n="pay.title">Monthly Payment Form</h1>
+    <p class="text-slate-500 mb-6 text-sm" data-i18n="pay.subtitle">Electricity = (meter difference) × 8 · Water = (meter difference) × 20</p>
 
     <form id="billForm" class="space-y-6">
       <!-- Room + month -->
       <section class="bg-white rounded-xl shadow-sm p-5 grid sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium mb-1">Room Number</label>
+          <label class="block text-sm font-medium mb-1" data-i18n="pay.room">Room Number</label>
           <select id="room" required class="w-full border rounded-lg px-3 py-2 bg-white">
-            <option value="">Select a room…</option>
+            <option value="" data-i18n="pay.room_ph">Select a room…</option>
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1">Bill Month</label>
+          <label class="block text-sm font-medium mb-1" data-i18n="pay.bill_month">Bill Month</label>
           <input id="bill_month" type="month" required class="w-full border rounded-lg px-3 py-2" />
         </div>
       </section>
@@ -44,34 +48,34 @@
       <!-- Rent -->
       <section class="bg-white rounded-xl shadow-sm p-5">
         <div class="flex items-center justify-between">
-          <span class="font-medium">Rent (this month)</span>
+          <span class="font-medium" data-i18n="pay.rent">Rent (this month)</span>
           <span id="rentDisplay" class="text-lg font-semibold">0.00</span>
         </div>
-        <p class="text-xs text-slate-400 mt-1">Loaded from room configuration (Database 1).</p>
+        <p class="text-xs text-slate-400 mt-1" data-i18n="pay.rent_note">Loaded from room configuration (Database 1).</p>
       </section>
 
       <!-- Electricity -->
       <section class="bg-white rounded-xl shadow-sm p-5 space-y-4">
-        <h2 class="font-semibold flex items-center gap-2">⚡ Electricity</h2>
+        <h2 class="font-semibold flex items-center gap-2" data-i18n="pay.electricity">⚡ Electricity</h2>
         <div>
-          <label class="block text-sm font-medium mb-1">Electric bill photo</label>
+          <label class="block text-sm font-medium mb-1" data-i18n="pay.electric_photo">Electric bill photo</label>
           <input id="electric_img" type="file" accept="image/*"
                  class="block w-full text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-slate-200" />
         </div>
         <div class="grid sm:grid-cols-3 gap-4">
           <div>
-            <label class="block text-sm font-medium mb-1">Previous meter</label>
+            <label class="block text-sm font-medium mb-1" data-i18n="pay.prev_meter">Previous meter</label>
             <input id="electric_prev" type="number" step="any" readonly
                    class="w-full border rounded-lg px-3 py-2 bg-slate-50" value="0" />
-            <p class="text-xs text-slate-400 mt-1">From last record · default 0</p>
+            <p class="text-xs text-slate-400 mt-1" data-i18n="pay.prev_note">From last record · default 0</p>
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">This month meter</label>
+            <label class="block text-sm font-medium mb-1" data-i18n="pay.curr_meter">This month meter</label>
             <input id="electric_curr" type="number" step="any" required
                    class="w-full border rounded-lg px-3 py-2" value="" />
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">Electric bill</label>
+            <label class="block text-sm font-medium mb-1" data-i18n="pay.electric_bill">Electric bill</label>
             <input id="electric_bill" type="text" readonly
                    class="w-full border rounded-lg px-3 py-2 bg-slate-50 font-semibold" value="0.00" />
           </div>
@@ -80,26 +84,26 @@
 
       <!-- Water -->
       <section class="bg-white rounded-xl shadow-sm p-5 space-y-4">
-        <h2 class="font-semibold flex items-center gap-2">💧 Water</h2>
+        <h2 class="font-semibold flex items-center gap-2" data-i18n="pay.water">💧 Water</h2>
         <div>
-          <label class="block text-sm font-medium mb-1">Water bill photo</label>
+          <label class="block text-sm font-medium mb-1" data-i18n="pay.water_photo">Water bill photo</label>
           <input id="water_img" type="file" accept="image/*"
                  class="block w-full text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-slate-200" />
         </div>
         <div class="grid sm:grid-cols-3 gap-4">
           <div>
-            <label class="block text-sm font-medium mb-1">Previous meter</label>
+            <label class="block text-sm font-medium mb-1" data-i18n="pay.prev_meter">Previous meter</label>
             <input id="water_prev" type="number" step="any" readonly
                    class="w-full border rounded-lg px-3 py-2 bg-slate-50" value="0" />
-            <p class="text-xs text-slate-400 mt-1">From last record · default 0</p>
+            <p class="text-xs text-slate-400 mt-1" data-i18n="pay.prev_note">From last record · default 0</p>
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">This month meter</label>
+            <label class="block text-sm font-medium mb-1" data-i18n="pay.curr_meter">This month meter</label>
             <input id="water_curr" type="number" step="any" required
                    class="w-full border rounded-lg px-3 py-2" value="" />
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">Water bill</label>
+            <label class="block text-sm font-medium mb-1" data-i18n="pay.water_bill">Water bill</label>
             <input id="water_bill" type="text" readonly
                    class="w-full border rounded-lg px-3 py-2 bg-slate-50 font-semibold" value="0.00" />
           </div>
@@ -109,33 +113,34 @@
       <!-- Common fee (shown separately from additional bills) -->
       <section id="commonSection" class="bg-white rounded-xl shadow-sm p-5 hidden">
         <div class="flex items-center justify-between">
-          <span class="font-medium">Common fee</span>
+          <span class="font-medium" data-i18n="pay.common_fee">Common fee</span>
           <span id="commonDisplay" class="text-lg font-semibold">0.00</span>
         </div>
       </section>
 
       <!-- Additional bills (only those present in DB1) -->
       <section id="additionalSection" class="bg-white rounded-xl shadow-sm p-5 hidden">
-        <h2 class="font-semibold mb-3">➕ Additional bills</h2>
+        <h2 class="font-semibold mb-3" data-i18n="pay.additional">➕ Additional bills</h2>
         <div id="additionalList" class="space-y-2 text-sm"></div>
       </section>
 
       <!-- Total -->
       <section class="bg-slate-900 text-white rounded-xl shadow-sm p-5 flex items-center justify-between">
-        <span class="font-medium">Total amount due</span>
+        <span class="font-medium" data-i18n="pay.total">Total amount due</span>
         <span id="totalDisplay" class="text-2xl font-bold">0.00</span>
       </section>
 
       <!-- Bank slip -->
       <section class="bg-white rounded-xl shadow-sm p-5">
-        <label class="block text-sm font-medium mb-1">Bank slip photo</label>
+        <label class="block text-sm font-medium mb-1" data-i18n="pay.slip_photo">Bank slip photo</label>
         <input id="slip_img" type="file" accept="image/*"
                class="block w-full text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-slate-200" />
       </section>
 
       <div class="flex items-center gap-3">
         <button type="submit" id="submitBtn"
-                class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl">
+                class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl"
+                data-i18n="pay.submit">
           Submit
         </button>
         <span id="status" class="text-sm"></span>
@@ -213,16 +218,16 @@
     // Render additional bills that are present (> 0) in DB1.
     function renderAdditional(room) {
       const items = [
-        ['Refrigerator', room.refrigerator_bill],
-        ['Microwave oven', room.microwave_bill],
-        ['Carpark', room.carpark_bill],
+        [I18n.t('item.refrigerator'), room.refrigerator_bill],
+        [I18n.t('item.microwave'), room.microwave_bill],
+        [I18n.t('item.carpark'), room.carpark_bill],
       ].filter(([, v]) => Number(v) > 0);
 
-      // Up to 4 labeled "other" bills — show each with its annotation.
+      // Up to 4 labeled "other" bills — show each with its (user-entered) annotation.
       const others = Array.isArray(room.other_bills) ? room.other_bills : [];
       for (const o of others) {
         if (Number(o.amount) > 0) {
-          const label = (o.label && o.label.trim()) ? o.label.trim() : 'Other';
+          const label = (o.label && o.label.trim()) ? o.label.trim() : I18n.t('item.other');
           items.push([label, o.amount]);
         }
       }
@@ -302,9 +307,8 @@
       }
 
       if (!rooms.length) {
-        $('status').innerHTML = isAdmin
-          ? '<span class="text-amber-600">No rooms yet — add one in <a class="underline" href="/rooms.html">Rooms (DB1)</a>.</span>'
-          : '<span class="text-amber-600">No room is configured for your account yet. Please contact the administrator.</span>';
+        $('status').innerHTML =
+          `<span class="text-amber-600">${I18n.t(isAdmin ? 'pay.no_rooms_admin' : 'pay.no_room_user')}</span>`;
         return;
       }
 
@@ -333,10 +337,10 @@
 
     $('billForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (!currentRoom) { $('status').textContent = 'Pick a room first.'; return; }
+      if (!currentRoom) { $('status').textContent = I18n.t('pay.pick_room'); return; }
       const btn = $('submitBtn');
       btn.disabled = true; btn.classList.add('opacity-60');
-      $('status').textContent = 'Uploading…';
+      $('status').textContent = I18n.t('pay.uploading');
 
       const [electricImg, waterImg, slipImg] = await Promise.all([
         fileToDataURL($('electric_img')),
@@ -371,7 +375,7 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Failed');
         $('status').innerHTML =
-          `<span class="text-emerald-600">Saved ✓ (total ${fmt(data.total)})</span>`;
+          `<span class="text-emerald-600">${I18n.t('pay.saved', { x: fmt(data.total) })}</span>`;
         $('billForm').reset();
         $('bill_month').value = defaultBillMonth();
         currentRoom = null;
@@ -399,6 +403,9 @@
     const _sess = window.DormAuth && window.DormAuth.getSession();
     if (_sess && _sess.role !== 'admin') $('bill_month').disabled = true;
     loadRooms();
+
+    // Re-render the dynamic additional-bill labels when the language changes.
+    document.addEventListener('i18n:change', () => { if (currentRoom) renderAdditional(currentRoom); });
   </script>
 </body>
 </html>

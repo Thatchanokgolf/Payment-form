@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dormitory Rules — Dorm Rent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/auth.js"></script>
+  <script src="/i18n.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+  <nav class="bg-slate-900 text-white">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/menu.html" id="navHeading" class="font-semibold hover:underline"></a>
+      <div class="flex items-center gap-4 text-sm">
+        <a href="/menu.html" class="hover:underline text-slate-300" data-i18n="nav.menu">Menu</a>
+        <a href="/contract.html" class="hover:underline text-slate-300" data-i18n="ext.back">← Back to contract</a>
+        <button id="langToggle" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1">EN</button>
+        <button id="logoutBtn" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1" data-i18n="nav.logout">Log out</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-1" data-i18n="rul.title">Dormitory Rules</h1>
+    <p id="rulesIntro" class="text-slate-500 text-sm mb-6"></p>
+    <div id="rulesContent" class="space-y-5"></div>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    // Rules extracted from the residential rental contract of อาคารจรัลประสิทธิ
+    // (Charal Prasit building), revised 24/8/2567. Each item is bilingual.
+    const INTRO = {
+      th: 'ระเบียบและข้อปฏิบัติของหอพัก (สรุปจากสัญญาเช่าห้องพักอาศัย อาคารจรัลประสิทธิ์ ฉบับแก้ไข 24/8/2567)',
+      en: 'Dormitory rules and regulations (summarized from the residential rental contract of Charal Prasit building, revised 24/8/2567).',
+    };
+
+    const SECTIONS = [
+      {
+        title: { th: '1. ค่าใช้จ่าย', en: '1. Fees' },
+        items: [
+          { th: 'ค่าไฟฟ้า หน่วยละ 8 บาท', en: 'Electricity: 8 baht per unit.' },
+          { th: 'ค่าน้ำประปา ลูกบาศก์เมตรละ 20 บาท คิดหน่วยเริ่มต้นที่ 5 หน่วย (ขั้นต่ำ 100 บาท)', en: 'Water: 20 baht per cubic metre, starting at a minimum of 5 units (minimum 100 baht).' },
+          { th: 'ค่าแรกเข้า 1,000 บาท (ชำระครั้งเดียว)', en: 'Entry fee: 1,000 baht (one-time).' },
+          { th: 'ค่าส่วนกลาง 1,500 บาท ต่อ 6 เดือน (ฟิตเนส + กำจัดขยะ + ที่จอดรถ + รักษาความปลอดภัย; เศษของ 6 เดือนนับเป็น 6 เดือน)', en: 'Common fee: 1,500 baht per 6 months (fitness, waste disposal, parking, security; any part of a 6-month period counts as a full 6 months).' },
+          { th: 'ค่าที่จอดรถพิเศษ (เฉพาะช่องที่กำหนด) 300 บาทต่อเดือน (ตัวเลือก)', en: 'Special parking (designated slot): 300 baht per month (optional).' },
+          { th: 'ค่าเช่าตู้เย็น 150 บาทต่อเดือน (ตัวเลือก)', en: 'Refrigerator rental: 150 baht per month (optional).' },
+          { th: 'ค่าเช่าไมโครเวฟ 50 บาทต่อเดือน (ตัวเลือก)', en: 'Microwave rental: 50 baht per month (optional).' },
+          { th: 'ค่ากุญแจพร้อมคีย์การ์ดสำหรับผู้เข้าพักคนที่ 2 จำนวน 500 บาท', en: 'Key + keycard for a 2nd occupant: 500 baht.' },
+        ],
+      },
+      {
+        title: { th: '2. การชำระเงิน', en: '2. Payment' },
+        items: [
+          { th: 'ชำระค่าเช่าระหว่างวันที่ 25 ของเดือนที่เช่า ถึงวันที่ 5 ของเดือนถัดไป ทุกเดือน', en: 'Pay rent between the 25th of the current month and the 5th of the following month, every month.' },
+          { th: 'เศษของเดือนตั้งแต่ 15 วันขึ้นไป นับเป็น 1 เดือน; น้อยกว่า 15 วันคิดเป็นรายวัน วันละ 250 บาท (ไม่รวมค่าน้ำค่าไฟ)', en: 'A partial month of 15 days or more counts as one month; less than 15 days is charged daily at 250 baht/day (excluding water and electricity).' },
+          { th: 'ชำระล่าช้ากว่าวันที่ 5 ของเดือนถัดไป มีค่าปรับ 200 บาท', en: 'Payment later than the 5th of the following month incurs a 200 baht late fee.' },
+          { th: 'ค้างชำระติดต่อกัน 2 เดือน ถือว่ายกเลิกสัญญาและริบเงินประกัน', en: 'Two consecutive months of non-payment results in contract termination and forfeiture of the deposit.' },
+          { th: 'การเช่าน้อยกว่า 6 เดือน ถือเป็นการเช่าชั่วคราว มีค่าใช้จ่ายเพิ่มเดือนละ 300 บาท', en: 'Renting for less than 6 months is considered temporary and incurs an extra 300 baht per month.' },
+        ],
+      },
+      {
+        title: { th: '3. ระเบียบการพักอาศัย', en: '3. Residence rules' },
+        items: [
+          { th: 'ดูแลรักษาความสะอาดบริเวณทางเดินส่วนกลางหน้าห้อง และห้ามวางสิ่งของในทางเดิน', en: 'Keep the shared corridor in front of your room clean and do not place any items in the corridor.' },
+          { th: 'ดูแลห้องและทรัพย์สินเสมือนเป็นของตนเอง รักษาความสงบ ไม่ส่งเสียงรบกวนห้องข้างเคียง', en: 'Care for the room and its property as your own, keep the peace, and do not disturb neighbouring rooms with noise.' },
+          { th: 'ห้ามเลี้ยงสัตว์เลี้ยงทุกชนิดภายในห้องพักและบริเวณหอพักโดยเด็ดขาด', en: 'Pets of any kind are strictly prohibited inside the room and anywhere on the dormitory premises.' },
+          { th: 'ผู้เช่าต้องรับผิดชอบความสูญหายหรือเสียหายที่เกิดแก่ห้องพักและทรัพย์สินภายในห้อง', en: 'The tenant is responsible for any loss or damage to the room and its property.' },
+          { th: 'ยินยอมให้ผู้ให้เช่าหรือตัวแทนเข้าตรวจห้องเป็นครั้งคราวตามเวลาอันสมควร', en: 'Allow the landlord or representative to inspect the room from time to time at reasonable hours.' },
+          { th: 'ห้ามดัดแปลง ต่อเติม หรือรื้อถอนห้องพักและทรัพย์สินภายในห้อง', en: 'Do not modify, extend, or dismantle the room or its property.' },
+          { th: 'ห้ามโอนหรือขายสัญญาเช่า และห้ามนำบุคคลอื่นมาพักชั่วคราว ยกเว้นบุคคลในครอบครัว โดยพักได้ไม่เกิน 2 ท่าน', en: 'Do not transfer or sell the lease, and do not let others stay temporarily except family members; a maximum of 2 occupants is allowed.' },
+          { th: 'ผู้เข้าพักคนที่ 2 ต้องแจ้งชื่อ-นามสกุล เบอร์โทร อีเมล พร้อมสำเนาบัตรประชาชน และชำระค่ากุญแจ/คีย์การ์ด', en: 'A 2nd occupant must provide name, phone, email and a copy of their ID card, and pay the key/keycard fee.' },
+          { th: 'รักษาคีย์การ์ดและกุญแจอย่างดี ห้ามให้ผู้อื่นยืมหรือทำเพิ่มเอง ทำหายปรับ 500 บาท; ยืมกุญแจชั่วคราวกรณีฉุกเฉิน 50 บาทต่อครั้ง', en: 'Keep the keycard and keys safe; do not lend them or duplicate them. Lost key/keycard: 500 baht fine; temporary key loan in emergencies: 50 baht per time.' },
+        ],
+      },
+      {
+        title: { th: '4. ความรับผิดและการผิดสัญญา', en: '4. Liability and breach' },
+        items: [
+          { th: 'ผู้เช่าต้องปฏิบัติตามระเบียบข้อบังคับของบริษัทฯ ซึ่งถือเป็นส่วนหนึ่งของสัญญาเช่า', en: 'The tenant must follow the company regulations, which form part of the lease.' },
+          { th: 'ผู้ให้เช่าไม่รับผิดชอบความสูญหายหรือเสียหายของรถและทรัพย์สินในรถที่จอดในที่จอดรถที่จัดให้', en: 'The landlord is not responsible for loss or damage to vehicles or property in vehicles parked in the provided parking area.' },
+          { th: 'การผิดสัญญาเช่าเครื่องเรือน (เฟอร์นิเจอร์) ถือเป็นการผิดสัญญานี้ด้วย และในทางกลับกัน', en: 'Breaching the furniture-rental agreement is also a breach of this contract, and vice versa.' },
+          { th: 'หากผิดสัญญา ผู้ให้เช่ามีสิทธิ์: บอกเลิกสัญญา / เรียกค่าเสียหาย / กำหนดให้ปฏิบัติตามสัญญา / ตัดน้ำ-ไฟได้ทันทีโดยไม่ต้องบอกล่วงหน้า', en: 'On breach, the landlord may: terminate the lease / claim damages / require compliance / cut water and electricity immediately without prior notice.' },
+          { th: 'เมื่อสัญญาสิ้นสุด ต้องส่งคืนห้องทันที มิฉะนั้นผู้ให้เช่ามีสิทธิ์เข้าครอบครองห้องและริบเงินประกัน', en: 'When the lease ends, return the room immediately; otherwise the landlord may repossess it and forfeit the deposit.' },
+        ],
+      },
+      {
+        title: { th: '5. เงินประกัน การต่อสัญญา และการย้ายออก', en: '5. Deposit, renewal and move-out' },
+        items: [
+          { th: 'เงินประกันสัญญา 8,000 บาท (รวมค่าแรกเข้า 1,000 บาท และค่าส่วนกลาง 1,500 บาท เป็นเงินรวม 10,500 บาท) คืนให้เมื่อไม่ผิดสัญญาและไม่ค้างชำระ', en: 'Security deposit 8,000 baht (with 1,000 baht entry fee and 1,500 baht common fee, total 10,500 baht), refunded if there is no breach and no outstanding payment.' },
+          { th: 'การต่อสัญญาต้องแจ้งก่อนสิ้นสุดอายุสัญญา 60 วัน', en: 'Renewal must be notified at least 60 days before the lease expires.' },
+          { th: 'เมื่อย้ายออกต้องทำความสะอาดและเก็บกวาดห้องให้อยู่ในสภาพปกติ มิฉะนั้นเสียค่าปรับทำความสะอาด 500 บาท หรือตามจำนวนความเสียหาย', en: 'On moving out, clean and tidy the room to normal condition; otherwise a 500 baht cleaning fine (or the amount of damage) applies.' },
+        ],
+      },
+    ];
+
+    function render() {
+      const lang = I18n.getLang();
+      $('rulesIntro').textContent = INTRO[lang] || INTRO.en;
+      const box = $('rulesContent');
+      box.innerHTML = '';
+      for (const sec of SECTIONS) {
+        const card = document.createElement('section');
+        card.className = 'bg-white rounded-xl shadow-sm p-5';
+        const h = document.createElement('h2');
+        h.className = 'font-semibold mb-3';
+        h.textContent = (sec.title[lang] || sec.title.en);
+        card.appendChild(h);
+        const ul = document.createElement('ul');
+        ul.className = 'list-disc pl-5 space-y-1.5 text-sm text-slate-700';
+        for (const it of sec.items) {
+          const li = document.createElement('li');
+          li.textContent = (it[lang] || it.en);
+          ul.appendChild(li);
+        }
+        card.appendChild(ul);
+        box.appendChild(card);
+      }
+    }
+
+    render();
+    document.addEventListener('i18n:change', render);
+  </script>
+</body>
+</html>

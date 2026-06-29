@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Extend Contract — Dorm Rent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/auth.js"></script>
+  <script src="/i18n.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+  <nav class="bg-slate-900 text-white">
+    <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/menu.html" id="navHeading" class="font-semibold hover:underline"></a>
+      <div class="flex items-center gap-4 text-sm">
+        <a href="/menu.html" class="hover:underline text-slate-300" data-i18n="nav.menu">Menu</a>
+        <a href="/contract.html" class="hover:underline text-slate-300" data-i18n="ext.back">← Back to contract</a>
+        <button id="langToggle" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1">EN</button>
+        <button id="logoutBtn" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1" data-i18n="nav.logout">Log out</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-2xl mx-auto px-4 py-8 space-y-6">
+    <div>
+      <h1 class="text-2xl font-bold mb-1" data-i18n="ext.title">Extend Contract</h1>
+      <p class="text-slate-500 text-sm" data-i18n="ext.subtitle">You may extend only to the end of April or May of next year.</p>
+    </div>
+
+    <p id="noContract" class="hidden text-amber-600 text-sm" data-i18n="ext.no_contract"></p>
+
+    <form id="extendForm" class="bg-white rounded-xl shadow-sm p-5 space-y-4 hidden">
+      <div class="flex items-center justify-between">
+        <span class="font-medium" data-i18n="ext.room">Room</span>
+        <span id="roomLabel" class="text-slate-700"></span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="font-medium" data-i18n="ext.current_end">Current end date</span>
+        <span id="currentEnd" class="text-slate-700">—</span>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" data-i18n="ext.new_end">New end date</label>
+        <select id="newEnd" class="w-full border rounded-lg px-3 py-2 bg-white"></select>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-xl" data-i18n="ext.submit">Submit extension</button>
+        <span id="msg" class="text-sm"></span>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const session = (window.DormAuth && window.DormAuth.getSession()) || {};
+    const params = new URLSearchParams(location.search);
+    // Admins can target a room via ?room=; residents use their own room.
+    const room = (session.role === 'admin')
+      ? (params.get('room') || '')
+      : (session.room_number || session.id || '');
+
+    let contract = null;
+
+    // Allowed extensions = end of April / May of the year AFTER the current end date.
+    function buildOptions() {
+      const sel = $('newEnd');
+      sel.innerHTML = '';
+      const baseYear = contract && contract.end_date
+        ? Number(contract.end_date.slice(0, 4))
+        : new Date().getFullYear();
+      const y = baseYear + 1;
+      [['ext.opt_apr', `${y}-04-30`], ['ext.opt_may', `${y}-05-31`]].forEach(([key, val]) => {
+        const o = document.createElement('option');
+        o.value = val;
+        o.textContent = I18n.t(key, { y });
+        sel.appendChild(o);
+      });
+    }
+
+    function render() {
+      if (!contract) {
+        $('noContract').classList.remove('hidden');
+        $('extendForm').classList.add('hidden');
+        return;
+      }
+      $('extendForm').classList.remove('hidden');
+      $('roomLabel').textContent = contract.room_number;
+      $('currentEnd').textContent = contract.end_date || '—';
+      buildOptions();
+    }
+
+    async function load() {
+      if (!room) { render(); return; }
+      try {
+        const res = await fetch('/api/contracts?room=' + encodeURIComponent(room));
+        contract = await res.json();
+      } catch (_) { contract = null; }
+      render();
+    }
+
+    $('extendForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      $('msg').textContent = I18n.t('con.saving');
+      try {
+        const res = await fetch('/api/contracts', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'extend', room_number: room, end_date: $('newEnd').value }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed');
+        contract = data;
+        $('currentEnd').textContent = data.end_date;
+        $('msg').innerHTML = `<span class="text-emerald-600">${I18n.t('ext.saved', { d: data.end_date })}</span>`;
+      } catch (err) {
+        $('msg').innerHTML = `<span class="text-red-600">${err.message}</span>`;
+      }
+    });
+
+    // Rebuild the localized option labels when language changes.
+    document.addEventListener('i18n:change', () => { if (contract) buildOptions(); });
+
+    load();
+  </script>
+</body>
+</html>

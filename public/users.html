@@ -6,54 +6,58 @@
   <title>Users (Database 3)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="/auth.js"></script>
+  <script src="/i18n.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen">
   <nav class="bg-slate-900 text-white">
     <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-      <span id="navHeading" class="font-semibold"></span>
+      <a href="/menu.html" id="navHeading" class="font-semibold hover:underline"></a>
       <div class="flex items-center gap-4 text-sm">
-        <a href="/" class="hover:underline text-slate-300">Payment Form</a>
-        <a href="/rooms.html" class="nav-admin hover:underline text-slate-300">Rooms (DB1)</a>
-        <a href="/records.html" class="nav-admin hover:underline text-slate-300">Records (DB2)</a>
-        <a href="/users.html" class="nav-admin hover:underline font-medium">Users (DB3)</a>
-        <button id="logoutBtn" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1">Log out</button>
+        <a href="/menu.html" class="hover:underline text-slate-300" data-i18n="nav.menu">Menu</a>
+        <a href="/" class="hover:underline text-slate-300" data-i18n="nav.payment">Payment Form</a>
+        <a href="/rooms.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.rooms">Rooms (DB1)</a>
+        <a href="/records.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.records">Records (DB2)</a>
+        <a href="/users.html" class="nav-admin hover:underline font-medium" data-i18n="nav.users">Users (DB3)</a>
+        <a href="/contracts.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.contracts">Contracts (DB4)</a>
+        <button id="langToggle" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1">EN</button>
+        <button id="logoutBtn" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1" data-i18n="nav.logout">Log out</button>
       </div>
     </div>
   </nav>
 
   <main class="max-w-3xl mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold mb-1">User Management · Database 3</h1>
-    <p class="text-slate-500 mb-6 text-sm">Add or edit login accounts. Residents (role <em>user</em>) only see their own room; admins see everything.</p>
+    <h1 class="text-2xl font-bold mb-1" data-i18n="usr.title">User Management · Database 3</h1>
+    <p class="text-slate-500 mb-6 text-sm" data-i18n="usr.subtitle">Add or edit login accounts. Residents (role user) only see their own room; admins see everything.</p>
 
     <form id="userForm" class="bg-white rounded-xl shadow-sm p-5 grid sm:grid-cols-2 gap-4 mb-8">
       <div>
-        <label class="block text-sm font-medium mb-1">User ID</label>
+        <label class="block text-sm font-medium mb-1" data-i18n="usr.user_id">User ID</label>
         <input id="user_id" required class="w-full border rounded-lg px-3 py-2" placeholder="201" />
-        <p class="text-xs text-slate-400 mt-1">Enter an existing ID to edit it.</p>
+        <p class="text-xs text-slate-400 mt-1" data-i18n="usr.user_hint">Enter an existing ID to edit it.</p>
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1">Password</label>
-        <input id="password" type="text" class="w-full border rounded-lg px-3 py-2" placeholder="(leave blank to keep)" />
+        <label class="block text-sm font-medium mb-1" data-i18n="usr.password">Password</label>
+        <input id="password" type="text" class="w-full border rounded-lg px-3 py-2" data-i18n-ph="usr.password_ph" placeholder="(leave blank to keep)" />
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1">Role</label>
+        <label class="block text-sm font-medium mb-1" data-i18n="usr.role">Role</label>
         <select id="role" class="w-full border rounded-lg px-3 py-2 bg-white">
-          <option value="user">user (resident)</option>
-          <option value="admin">admin</option>
+          <option value="user" data-i18n="usr.role_user">user (resident)</option>
+          <option value="admin" data-i18n="usr.role_admin">admin</option>
         </select>
       </div>
       <div id="roomWrap">
-        <label class="block text-sm font-medium mb-1">Room number</label>
+        <label class="block text-sm font-medium mb-1" data-i18n="usr.room_number">Room number</label>
         <input id="room_number" class="w-full border rounded-lg px-3 py-2" placeholder="201" />
-        <p class="text-xs text-slate-400 mt-1">Residents only — ignored for admins.</p>
+        <p class="text-xs text-slate-400 mt-1" data-i18n="usr.room_hint">Residents only — ignored for admins.</p>
       </div>
       <div class="sm:col-span-2">
-        <label class="block text-sm font-medium mb-1">Heading (shown top-left)</label>
+        <label class="block text-sm font-medium mb-1" data-i18n="usr.heading">Heading (shown top-left)</label>
         <input id="heading" class="w-full border rounded-lg px-3 py-2" placeholder="Charal Prasit Lakeview" />
       </div>
       <div class="sm:col-span-2 flex items-center gap-3">
-        <button class="bg-slate-900 hover:bg-slate-700 text-white font-semibold px-6 py-2.5 rounded-xl">Save user</button>
-        <button type="button" id="clearBtn" class="text-sm text-slate-500 hover:underline">Clear</button>
+        <button class="bg-slate-900 hover:bg-slate-700 text-white font-semibold px-6 py-2.5 rounded-xl" data-i18n="usr.save">Save user</button>
+        <button type="button" id="clearBtn" class="text-sm text-slate-500 hover:underline" data-i18n="usr.clear">Clear</button>
         <span id="status" class="text-sm"></span>
       </div>
     </form>
@@ -62,10 +66,10 @@
       <table class="w-full text-sm">
         <thead class="bg-slate-50 text-slate-500 text-left">
           <tr>
-            <th class="px-4 py-2">User ID</th>
-            <th class="px-4 py-2">Role</th>
-            <th class="px-4 py-2">Room</th>
-            <th class="px-4 py-2">Heading</th>
+            <th class="px-4 py-2" data-i18n="usr.th_id">User ID</th>
+            <th class="px-4 py-2" data-i18n="usr.th_role">Role</th>
+            <th class="px-4 py-2" data-i18n="usr.th_room">Room</th>
+            <th class="px-4 py-2" data-i18n="usr.th_heading">Heading</th>
             <th class="px-4 py-2"></th>
           </tr>
         </thead>
@@ -94,7 +98,7 @@
       const body = $('userRows');
       body.innerHTML = '';
       if (!usersCache.length) {
-        body.innerHTML = '<tr><td colspan="5" class="px-4 py-6 text-center text-slate-400">No users yet.</td></tr>';
+        body.innerHTML = `<tr><td colspan="5" class="px-4 py-6 text-center text-slate-400">${I18n.t('usr.none')}</td></tr>`;
         return;
       }
       for (const u of usersCache) {
@@ -109,8 +113,8 @@
           <td class="px-4 py-2">${esc(u.room_number || '—')}</td>
           <td class="px-4 py-2 text-xs">${esc(u.heading)}</td>
           <td class="px-4 py-2 text-right whitespace-nowrap">
-            <button class="text-blue-600 hover:underline mr-3" data-edit="${esc(u.user_id)}">Edit</button>
-            <button class="text-red-600 hover:underline" data-del="${esc(u.user_id)}">Delete</button>
+            <button class="text-blue-600 hover:underline mr-3" data-edit="${esc(u.user_id)}">${I18n.t('usr.edit')}</button>
+            <button class="text-red-600 hover:underline" data-del="${esc(u.user_id)}">${I18n.t('usr.delete')}</button>
           </td>`;
         body.appendChild(tr);
       }
@@ -143,9 +147,9 @@
         $('room_number').value = u.room_number || '';
         $('heading').value = u.heading || '';
         syncRoomVisibility();
-        $('status').innerHTML = '<span class="text-blue-600">Existing user loaded — editing.</span>';
+        $('status').innerHTML = `<span class="text-blue-600">${I18n.t('usr.loaded')}</span>`;
       } else {
-        $('status').innerHTML = '<span class="text-slate-400">New user.</span>';
+        $('status').innerHTML = `<span class="text-slate-400">${I18n.t('usr.newuser')}</span>`;
       }
     }
     $('user_id').addEventListener('change', onUserIdEntered);
@@ -158,7 +162,7 @@
     $('clearBtn').addEventListener('click', clearForm);
 
     async function delUser(userId) {
-      if (!confirm(`Delete user ${userId}?`)) return;
+      if (!confirm(I18n.t('usr.confirm_del', { x: userId }))) return;
       const res = await fetch('/api/users', {
         method: 'DELETE',
         headers: { 'content-type': 'application/json' },
@@ -179,7 +183,7 @@
 
     $('userForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      $('status').textContent = 'Saving…';
+      $('status').textContent = I18n.t('usr.saving');
       const payload = {
         me: ME,
         user_id: $('user_id').value.trim(),
@@ -196,7 +200,7 @@
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Failed');
-        $('status').innerHTML = '<span class="text-emerald-600">Saved ✓</span>';
+        $('status').innerHTML = `<span class="text-emerald-600">${I18n.t('usr.saved')}</span>`;
         clearForm();
         loadUsers();
       } catch (err) {
@@ -206,6 +210,9 @@
 
     syncRoomVisibility();
     loadUsers();
+
+    // Re-render the user table (dynamic labels) on language change.
+    document.addEventListener('i18n:change', loadUsers);
   </script>
 </body>
 </html>
