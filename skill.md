@@ -22,7 +22,9 @@ A reusable playbook for building a static **HTML + Tailwind CSS** front end back
   role / heading`. Credentials are verified **server-side** by `POST /api/login`
   (`netlify/functions/login.js`), which returns `{id, room_number, role, heading}` and never
   the password.
-- `public/auth.js` is loaded in the `<head>` of every page. `DormAuth.login()` calls
+- `public/auth.js` is loaded on every **internal** page (NOT on the public pages
+  `index.html` / `detail.html` / `reserve.html`, which are reachable without login).
+  `DormAuth.login()` calls
   `/api/login`; on success it stores the session in `localStorage` (`dormAuth`). It also runs
   an **immediate guard** (redirects to `/login.html` when not signed in; sends non-admins away
   from `rooms.html` / `records.html`) and, on `DOMContentLoaded`, sets the role heading
@@ -51,12 +53,17 @@ dorm-rent-app/
 │   ├── login.html          # dummy login screen
 │   ├── auth.js             # client-side auth guard (loaded by every page)
 │   ├── i18n.js             # Thai/English translations + toggle (loaded by every page)
+│   ├── index.html          # PUBLIC front page (no auth): details / reserve / vacant
+│   ├── detail.html         # PUBLIC dormitory details (blank, 2 branches)
+│   ├── reserve.html        # PUBLIC reservation form -> Database 5 (1-year term, all required)
+│   ├── status.html         # PUBLIC check reservation status by 7-letter key
 │   ├── menu.html           # main menu (post-login landing): links to the forms
 │   ├── contract.html       # contract form (dates, PDF links, extend/terminate links)
 │   ├── contracts.html      # manage contracts (Database 4) — admin only
+│   ├── reservations.html   # manage reservations (Database 5) — admin only
 │   ├── extend.html         # extend contract (to end of Apr/May next year)
 │   ├── rules.html          # dormitory rules — placeholder
-│   ├── index.html          # payment form (writes Database 2)
+│   ├── payment.html        # payment form (writes Database 2) — login required
 │   ├── rooms.html          # manage Database 1 (room config) — admin only
 │   ├── records.html        # view Database 2 submissions — admin only
 │   └── users.html          # manage Database 3 (login accounts) — admin only
@@ -64,6 +71,7 @@ dorm-rent-app/
 │   ├── login.js            # verify credentials (Database 3) -> /api/login
 │   ├── users.js            # manage app_users (admin) -> /api/users
 │   ├── contracts.js        # contracts CRUD + extend (Database 4) -> /api/contracts
+│   ├── reservations.js     # reservations (Database 5) -> /api/reservations
 │   ├── rooms.js            # CRUD for Database 1  -> /api/rooms
 │   └── records.js          # list/create Database 2 -> /api/records
 ├── schema.sql              # run once in Neon SQL editor
@@ -82,8 +90,10 @@ dorm-rent-app/
 - Redirects map clean `/api/rooms` & `/api/records` → `/.netlify/functions/*`.
 
 ### Environment variables (set in Netlify → Site settings → Environment variables)
-- `DATABASE_URL` = Neon connection string (`...?sslmode=require`).
-  - Also put it in a local `.env` for `netlify dev`.
+- `DATABASE_URL` = main Neon connection string (`...?sslmode=require`).
+- `ROOM_DATABASE_URL` = **second** Neon DB holding the `room` availability table
+  (`roomno`, `status`). Used by the reservation form to check/claim availability.
+  - Also put both in a local `.env` for `netlify dev` (changing `.env` requires a dev restart).
 
 ### Function conventions
 - Use the modern Netlify handler signature: `export default async (req) => Response`.
@@ -104,6 +114,15 @@ dorm-rent-app/
   its amount is **> 0**. Other bills are stored as `JSONB` (`other_bills` = `[{label, amount}]`).
 - Other bills are **one-off**: when a payment record is submitted, the room's `other_bills`
   in DB1 are cleared to `[]` (the bill record keeps its own snapshot), so they don't recur.
+- Reservations (DB5): the public form checks room availability against the external
+  `room` table (`ROOM_DATABASE_URL`). Reservable statuses are **Vacant** and **Leave-Vacant**.
+  On submit the function re-checks and **atomically claims** the room with a conditional
+  UPDATE (only if still reservable → prevents double-booking): Vacant→Occupied,
+  Leave-Vacant→Leave-Reserve. Success/failure is shown to the user; the reservation is only
+  saved when the claim succeeds. All reservation fields (incl. bank slip) are mandatory and
+  re-validated server-side. On success a random **7-letter `ref_key`** is generated; the public
+  `status.html` page looks up `status` (`Unverified`/`Verified`) by that key
+  (`GET /api/reservations?key=…`), and admins flip it with `POST {action:'verify', id}`.
 - Contracts (DB4): one current contract per room (`room_number` PK). The contract page loads
   by room (resident = own room, admin picks one). **Extend** only allows the end of April
   (`MM-DD=04-30`) or May (`05-31`) of the year after the current end date, validated again

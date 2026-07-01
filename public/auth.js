@@ -5,7 +5,7 @@
 // Netlify functions remain open; do not rely on this to protect data.
 (function () {
   const KEY = 'dormAuth';
-  const ADMIN_ONLY = ['rooms.html', 'records.html', 'users.html', 'contracts.html'];
+  const ADMIN_ONLY = ['rooms.html', 'records.html', 'users.html', 'contracts.html', 'reservations.html'];
 
   const getSession = () => {
     try { return JSON.parse(localStorage.getItem(KEY)); } catch (_) { return null; }

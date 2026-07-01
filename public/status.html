@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Check Reservation Status</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/i18n.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+  <nav class="bg-slate-900 text-white">
+    <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/" class="font-semibold hover:underline">🏠 <span data-i18n="fp.title">Dormitory</span></a>
+      <div class="flex items-center gap-4 text-sm">
+        <a href="/reserve.html" class="hover:underline text-slate-300" data-i18n="fp.reserve_title">Reserve a room</a>
+        <a href="/" class="hover:underline text-slate-300" data-i18n="st.home">← Back to home</a>
+        <button id="langToggle" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1">EN</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-2xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-1" data-i18n="st.title">Check Reservation Status</h1>
+    <p class="text-slate-500 text-sm mb-6" data-i18n="st.subtitle">Enter your 7-letter reservation key.</p>
+
+    <form id="statusForm" class="bg-white rounded-xl shadow-sm p-5">
+      <label class="block text-sm font-medium mb-1" data-i18n="st.key">Reservation key</label>
+      <div class="flex gap-2">
+        <input id="key" required maxlength="7"
+               class="flex-1 border rounded-lg px-3 py-2 uppercase tracking-widest font-semibold" placeholder="ABCDEFG" />
+        <button class="bg-slate-900 hover:bg-slate-700 text-white font-semibold px-5 rounded-lg" data-i18n="st.check">Check</button>
+      </div>
+    </form>
+
+    <div id="result" class="mt-5"></div>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+    $('statusForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const key = $('key').value.trim().toUpperCase();
+      if (!key) return;
+      $('result').innerHTML = `<p class="text-slate-400 text-sm">${I18n.t('st.checking')}</p>`;
+      try {
+        const res = await fetch('/api/reservations?key=' + encodeURIComponent(key));
+        const data = await res.json();
+        if (!data.found) {
+          $('result').innerHTML = `<p class="text-amber-600 text-sm">${I18n.t('st.not_found')}</p>`;
+          return;
+        }
+        const verified = data.status === 'Verified';
+        const badge = `<span class="text-xs rounded px-2 py-0.5 ${verified
+          ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${I18n.t('stat.' + data.status)}</span>`;
+        $('result').innerHTML = `
+          <div class="bg-white rounded-xl shadow-sm p-5 space-y-2 text-sm">
+            <div class="flex justify-between"><span class="font-medium">${I18n.t('st.status_label')}</span><span>${badge}</span></div>
+            <div class="flex justify-between"><span class="font-medium">${I18n.t('st.branch')}</span><span>${esc(data.branch || '—')}</span></div>
+            <div class="flex justify-between"><span class="font-medium">${I18n.t('st.room')}</span><span>${esc(data.room_number || '—')}</span></div>
+            <div class="flex justify-between"><span class="font-medium">${I18n.t('st.entry')}</span><span>${esc(data.date_of_entry || '—')}</span></div>
+          </div>`;
+      } catch (err) {
+        $('result').innerHTML = `<p class="text-red-600 text-sm">${esc(err.message)}</p>`;
+      }
+    });
+  </script>
+</body>
+</html>

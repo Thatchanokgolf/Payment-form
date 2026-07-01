@@ -55,6 +55,27 @@ CREATE TABLE IF NOT EXISTS contracts (
 );
 
 -- ---------------------------------------------------------------------
+-- DATABASE 5: dormitory reservations (public reservation form)
+-- Reservation term is fixed at 1 year (end_date = date_of_entry + 1 year).
+-- ---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS reservations (
+  id             SERIAL PRIMARY KEY,
+  branch         TEXT,                  -- 'Charal Prasit Lakeview' | 'Baan Mae Miw'
+  room_number    TEXT,
+  name           TEXT,
+  surname        TEXT,
+  telephone      TEXT,
+  home_address   TEXT,
+  line_id        TEXT,
+  date_of_entry  DATE,
+  end_date       DATE,                  -- date_of_entry + 1 year
+  bank_slip_image TEXT,                 -- base64 data URL; reservation fee 3,000 baht
+  ref_key        TEXT,                  -- random 7-letter key for status lookup
+  status         TEXT NOT NULL DEFAULT 'Unverified',  -- 'Unverified' | 'Verified'
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- ---------------------------------------------------------------------
 -- DATABASE 2: submitted monthly bill records
 -- electric_bill = (electric_curr - electric_prev) * 8
 -- water_bill    = (water_curr    - water_prev)    * 20

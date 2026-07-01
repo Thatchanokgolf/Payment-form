@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reservations (Database 5)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/auth.js"></script>
+  <script src="/i18n.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+  <nav class="bg-slate-900 text-white">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/menu.html" id="navHeading" class="font-semibold hover:underline"></a>
+      <div class="flex items-center gap-4 text-sm">
+        <a href="/menu.html" class="hover:underline text-slate-300" data-i18n="nav.menu">Menu</a>
+        <a href="/rooms.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.rooms">Rooms (DB1)</a>
+        <a href="/records.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.records">Records (DB2)</a>
+        <a href="/users.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.users">Users (DB3)</a>
+        <a href="/contracts.html" class="nav-admin hover:underline text-slate-300" data-i18n="nav.contracts">Contracts (DB4)</a>
+        <a href="/reservations.html" class="nav-admin hover:underline font-medium" data-i18n="nav.reservations">Reservations (DB5)</a>
+        <button id="langToggle" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1">EN</button>
+        <button id="logoutBtn" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1" data-i18n="nav.logout">Log out</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-1" data-i18n="ra.title">Reservation Management · Database 5</h1>
+    <p class="text-slate-500 mb-6 text-sm" data-i18n="ra.subtitle">Submitted dormitory reservations.</p>
+
+    <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
+      <table class="w-full text-sm whitespace-nowrap">
+        <thead class="bg-slate-50 text-slate-500 text-left">
+          <tr>
+            <th class="px-3 py-2" data-i18n="ra.th_date">Submitted</th>
+            <th class="px-3 py-2" data-i18n="ra.th_branch">Branch</th>
+            <th class="px-3 py-2" data-i18n="ra.th_room">Room</th>
+            <th class="px-3 py-2" data-i18n="ra.th_name">Name</th>
+            <th class="px-3 py-2" data-i18n="ra.th_tel">Telephone</th>
+            <th class="px-3 py-2" data-i18n="ra.th_line">Line ID</th>
+            <th class="px-3 py-2" data-i18n="ra.th_entry">Entry</th>
+            <th class="px-3 py-2" data-i18n="ra.th_end">End</th>
+            <th class="px-3 py-2" data-i18n="ra.th_address">Address</th>
+            <th class="px-3 py-2" data-i18n="ra.th_slip">Slip</th>
+            <th class="px-3 py-2" data-i18n="ra.th_key">Key</th>
+            <th class="px-3 py-2" data-i18n="ra.th_status">Status</th>
+            <th class="px-3 py-2"></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Slip modal -->
+  <div id="modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl shadow-lg max-w-lg w-full max-h-[85vh] overflow-auto">
+      <div class="flex items-center justify-between px-5 py-3 border-b">
+        <h3 class="font-semibold" data-i18n="ra.slip_title">Bank slip</h3>
+        <button id="modalClose" class="text-slate-400 hover:text-slate-700 text-xl leading-none">&times;</button>
+      </div>
+      <div id="modalBody" class="p-5"></div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+    async function load() {
+      const res = await fetch('/api/reservations');
+      const rows = await res.json();
+      const body = $('rows');
+      body.innerHTML = '';
+      if (!rows.length) {
+        body.innerHTML = `<tr><td colspan="13" class="px-4 py-6 text-center text-slate-400">${I18n.t('ra.none')}</td></tr>`;
+        return;
+      }
+      for (const r of rows) {
+        const tr = document.createElement('tr');
+        tr.className = 'border-t align-top';
+        tr.innerHTML = `
+          <td class="px-3 py-2">${new Date(r.created_at).toLocaleDateString()}</td>
+          <td class="px-3 py-2">${esc(r.branch || '—')}</td>
+          <td class="px-3 py-2 font-medium">${esc(r.room_number || '—')}</td>
+          <td class="px-3 py-2">${esc(((r.name || '') + ' ' + (r.surname || '')).trim() || '—')}</td>
+          <td class="px-3 py-2">${esc(r.telephone || '—')}</td>
+          <td class="px-3 py-2">${esc(r.line_id || '—')}</td>
+          <td class="px-3 py-2">${esc(r.date_of_entry || '—')}</td>
+          <td class="px-3 py-2">${esc(r.end_date || '—')}</td>
+          <td class="px-3 py-2 max-w-xs whitespace-normal text-xs">${esc(r.home_address || '—')}</td>
+          <td class="px-3 py-2">${r.has_slip
+            ? `<button class="text-blue-600 hover:underline" data-slip="${r.id}">${I18n.t('ra.view')}</button>`
+            : '<span class="text-slate-400">—</span>'}</td>
+          <td class="px-3 py-2 font-mono tracking-wider">${esc(r.ref_key || '—')}</td>
+          <td class="px-3 py-2">${(r.status === 'Verified'
+            ? '<span class="text-xs rounded px-2 py-0.5 bg-emerald-100 text-emerald-700">'
+            : '<span class="text-xs rounded px-2 py-0.5 bg-amber-100 text-amber-700">') + I18n.t('stat.' + (r.status || 'Unverified')) + '</span>'}</td>
+          <td class="px-3 py-2 text-right whitespace-nowrap">
+            ${r.status !== 'Verified'
+              ? `<button class="text-emerald-600 hover:underline mr-3" data-verify="${r.id}">${I18n.t('ra.verify')}</button>`
+              : ''}
+            <button class="text-red-600 hover:underline" data-del="${r.id}">${I18n.t('ra.delete')}</button>
+          </td>`;
+        body.appendChild(tr);
+      }
+      body.querySelectorAll('[data-del]').forEach((b) =>
+        b.addEventListener('click', () => del(b.dataset.del)));
+      body.querySelectorAll('[data-slip]').forEach((b) =>
+        b.addEventListener('click', () => showSlip(b.dataset.slip)));
+      body.querySelectorAll('[data-verify]').forEach((b) =>
+        b.addEventListener('click', () => verify(b.dataset.verify)));
+    }
+
+    async function verify(id) {
+      await fetch('/api/reservations', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ action: 'verify', id: Number(id) }),
+      });
+      load();
+    }
+
+    function closeModal() {
+      $('modal').classList.add('hidden');
+      $('modal').classList.remove('flex');
+      $('modalBody').innerHTML = '';
+    }
+    $('modalClose').addEventListener('click', closeModal);
+    $('modal').addEventListener('click', (e) => { if (e.target === $('modal')) closeModal(); });
+
+    async function showSlip(id) {
+      $('modal').classList.remove('hidden');
+      $('modal').classList.add('flex');
+      $('modalBody').innerHTML = `<p class="text-slate-400 text-sm">${I18n.t('ra.loading')}</p>`;
+      try {
+        const res = await fetch('/api/reservations?id=' + encodeURIComponent(id) + '&image=slip');
+        const data = await res.json();
+        $('modalBody').innerHTML = data.image
+          ? `<img src="${data.image}" alt="slip" class="max-w-full rounded-lg" />`
+          : `<p class="text-slate-400 text-sm">${I18n.t('ra.no_slip')}</p>`;
+      } catch (err) {
+        $('modalBody').innerHTML = `<p class="text-red-600 text-sm">${esc(err.message)}</p>`;
+      }
+    }
+
+    async function del(id) {
+      if (!confirm(I18n.t('ra.confirm_del'))) return;
+      await fetch('/api/reservations', {
+        method: 'DELETE', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id: Number(id) }),
+      });
+      load();
+    }
+
+    load();
+    document.addEventListener('i18n:change', load);
+  </script>
+</body>
+</html>

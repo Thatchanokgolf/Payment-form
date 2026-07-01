@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dormitory Reservation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/i18n.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+  <nav class="bg-slate-900 text-white">
+    <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/" class="font-semibold hover:underline">🏠 <span data-i18n="fp.title">Dormitory</span></a>
+      <div class="flex items-center gap-4 text-sm">
+        <a href="/" class="hover:underline text-slate-300" data-i18n="rsv.home">← Back to home</a>
+        <button id="langToggle" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1">EN</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-2xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-1" data-i18n="rsv.title">Dormitory Reservation</h1>
+    <p class="text-slate-500 text-sm mb-6" data-i18n="rsv.subtitle">The reservation term is 1 year.</p>
+
+    <form id="resForm" class="bg-white rounded-xl shadow-sm p-5 grid sm:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium mb-1" data-i18n="rsv.branch">Branch</label>
+        <select id="branch" required class="w-full border rounded-lg px-3 py-2 bg-white">
+          <option value="" data-i18n="rsv.select_branch">Select a branch…</option>
+          <option value="Charal Prasit Lakeview">Charal Prasit Lakeview</option>
+          <option value="Baan Mae Miw">Baan Mae Miw</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" data-i18n="rsv.room">Room number</label>
+        <div class="flex gap-2">
+          <input id="room_number" required class="flex-1 border rounded-lg px-3 py-2" />
+          <button type="button" id="checkBtn"
+                  class="bg-slate-200 hover:bg-slate-300 rounded-lg px-4 text-sm font-medium" data-i18n="rsv.check">Check</button>
+        </div>
+        <p id="checkResult" class="text-xs mt-1"></p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" data-i18n="rsv.name">Name</label>
+        <input id="name" required class="w-full border rounded-lg px-3 py-2" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" data-i18n="rsv.surname">Surname</label>
+        <input id="surname" required class="w-full border rounded-lg px-3 py-2" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" data-i18n="rsv.tel">Telephone</label>
+        <input id="telephone" type="tel" required class="w-full border rounded-lg px-3 py-2" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" data-i18n="rsv.line">Line ID</label>
+        <input id="line_id" required class="w-full border rounded-lg px-3 py-2" />
+      </div>
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium mb-1" data-i18n="rsv.address">Home address</label>
+        <textarea id="home_address" rows="2" required class="w-full border rounded-lg px-3 py-2"></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" data-i18n="rsv.entry">Date of entry</label>
+        <input id="date_of_entry" type="date" required class="w-full border rounded-lg px-3 py-2" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" data-i18n="rsv.end">Contract end date</label>
+        <input id="end_date" type="text" readonly class="w-full border rounded-lg px-3 py-2 bg-slate-50" />
+        <p class="text-xs text-slate-400 mt-1" data-i18n="rsv.end_note">1 year from the date of entry.</p>
+      </div>
+
+      <div class="sm:col-span-2">
+        <div class="bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-lg px-3 py-2 mb-2" data-i18n="rsv.fee">Reservation fee: 3,000 baht.</div>
+        <label class="block text-sm font-medium mb-1" data-i18n="rsv.slip">Bank slip photo</label>
+        <input id="bank_slip" type="file" accept="image/*" required
+               class="block w-full text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-slate-200" />
+      </div>
+
+      <div class="sm:col-span-2 flex flex-wrap items-center gap-4">
+        <button class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-xl" data-i18n="rsv.submit">Submit reservation</button>
+        <a href="/status.html" class="text-sm text-blue-600 hover:underline" data-i18n="rsv.check_status">Check reservation status</a>
+      </div>
+
+      <div class="sm:col-span-2">
+        <span id="status" class="text-sm"></span>
+      </div>
+    </form>
+
+    <!-- Temporary confirmation summary shown after a successful submission. -->
+    <div id="summary" class="mt-6 hidden"></div>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+    // Temporarily show the submitted reservation (key + data) on the page.
+    function showSummary(payload, data) {
+      const row = (label, val) =>
+        `<div class="flex justify-between gap-4 py-1 border-b last:border-0">
+           <span class="font-medium">${I18n.t(label)}</span>
+           <span class="text-right">${esc(val || '—')}</span></div>`;
+      $('summary').innerHTML = `
+        <div class="bg-white rounded-xl shadow-sm p-5">
+          <h2 class="font-semibold mb-3">${I18n.t('rsv.summary_title')}</h2>
+          <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-3">
+            <div><span>${I18n.t('rsv.key_label')}</span>
+              <span class="font-bold tracking-widest text-emerald-800">${esc(data.ref_key)}</span></div>
+            <p class="text-xs text-emerald-700 mt-1">${I18n.t('rsv.key_note')}</p>
+          </div>
+          <div class="text-sm">
+            ${row('rsv.branch', payload.branch)}
+            ${row('rsv.room', payload.room_number)}
+            ${row('rsv.name', payload.name)}
+            ${row('rsv.surname', payload.surname)}
+            ${row('rsv.tel', payload.telephone)}
+            ${row('rsv.address', payload.home_address)}
+            ${row('rsv.line', payload.line_id)}
+            ${row('rsv.entry', data.date_of_entry)}
+            ${row('rsv.end', data.end_date)}
+            <div class="flex justify-between gap-4 py-1">
+              <span class="font-medium">${I18n.t('st.status_label')}</span>
+              <span class="text-xs rounded px-2 py-0.5 bg-amber-100 text-amber-700">${I18n.t('stat.Unverified')}</span>
+            </div>
+          </div>
+        </div>`;
+      $('summary').classList.remove('hidden');
+      $('summary').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Show the 1-year end date derived from the date of entry.
+    function plusOneYear(iso) {
+      if (!iso) return '';
+      const d = new Date(iso + 'T00:00:00');
+      d.setFullYear(d.getFullYear() + 1);
+      return d.toISOString().slice(0, 10);
+    }
+    $('date_of_entry').addEventListener('change', () => {
+      $('end_date').value = plusOneYear($('date_of_entry').value);
+    });
+
+    // Check room availability against the external room database.
+    function setCheck(cls, key) {
+      $('checkResult').className = 'text-xs mt-1 ' + cls;
+      $('checkResult').textContent = I18n.t(key);
+    }
+    $('checkBtn').addEventListener('click', async () => {
+      const room = $('room_number').value.trim();
+      if (!room) { setCheck('text-amber-600', 'rsv.room_required'); return; }
+      setCheck('text-slate-400', 'rsv.checking');
+      try {
+        const res = await fetch('/api/reservations?check=1&room=' + encodeURIComponent(room));
+        const data = await res.json();
+        setCheck(data.reservable ? 'text-emerald-600' : 'text-red-600',
+                 data.reservable ? 'rsv.can_reserve' : 'rsv.cannot_reserve');
+      } catch (_) {
+        setCheck('text-red-600', 'rsv.cannot_reserve');
+      }
+    });
+
+    function fileToDataURL(input) {
+      return new Promise((resolve) => {
+        const file = input.files && input.files[0];
+        if (!file) return resolve(null);
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    $('resForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      $('status').textContent = I18n.t('rsv.sending');
+      const payload = {
+        branch: $('branch').value,
+        room_number: $('room_number').value.trim(),
+        name: $('name').value.trim(),
+        surname: $('surname').value.trim(),
+        telephone: $('telephone').value.trim(),
+        home_address: $('home_address').value.trim(),
+        line_id: $('line_id').value.trim(),
+        date_of_entry: $('date_of_entry').value,
+        bank_slip_image: await fileToDataURL($('bank_slip')),
+      };
+      try {
+        const res = await fetch('/api/reservations', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data && data.reserved) {
+          $('status').innerHTML = `<span class="text-emerald-600 font-medium">${I18n.t('rsv.success')}</span>`;
+          showSummary(payload, data);
+          $('resForm').reset();
+          $('end_date').value = '';
+          $('checkResult').textContent = '';
+        } else if (res.status === 409 || (data && data.reason === 'unavailable')) {
+          $('status').innerHTML = `<span class="text-red-600 font-medium">${I18n.t('rsv.unavailable')}</span>`;
+        } else {
+          throw new Error((data && data.error) || 'Failed');
+        }
+      } catch (err) {
+        $('status').innerHTML = `<span class="text-red-600">${err.message}</span>`;
+      }
+    });
+  </script>
+</body>
+</html>

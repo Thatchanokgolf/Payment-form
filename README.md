@@ -26,6 +26,17 @@ Admins see all pages; users only see the payment form (Rooms/Records are hidden 
 direct access redirects them back). Log out via the button at the top right.
 
 ## Pages
+
+### Public (no login)
+- `/` — **Front page**: dormitory details, reservation form, vacant-room view (external), and a login link.
+- `/detail.html` — **Dormitory details** (blank placeholder), split into Charal Prasit Lakeview and Baan Mae Miw.
+- `/reserve.html` — **Reservation form** (all fields mandatory, incl. bank slip): branch, room, name, surname,
+  telephone, home address, Line ID, date of entry (1-year term). A **Check** button verifies room availability
+  against the external room DB before reserving; on success a random **7-letter key** is shown for status lookup.
+  Saves to Database 5.
+- `/status.html` — **Check reservation status**: enter the 7-letter key to see Verified / Unverified.
+
+### Internal (login required)
 - `/menu.html` — **Main menu** (post-login landing): Payment form, Repair form (external Google Form),
   Reservation form (external), and Contract form.
 - `/contract.html` — **Contract form**: shows the room's start/end dates, links to the contract &
@@ -35,13 +46,15 @@ direct access redirects them back). Log out via the button at the top right.
   saves the new end date to the database.
 - `/rules.html` — **Dormitory rules** (bilingual), summarized from the residential rental contract (rev. 24/8/2567).
 - `/contracts.html` — **Contract management** (Database 4, admin only): add/edit/delete contracts per room.
-- `/` — **Payment form** (Database 2). Pick a room, auto-loads rent + additional bills,
+- `/payment.html` — **Payment form** (Database 2). Pick a room, auto-loads rent + additional bills,
   pulls previous meter readings from the last record, computes electric/water bills and total,
   upload photos (electric bill, water bill, bank slip), submit.
 - `/rooms.html` — **Room configuration** (Database 1): rent + fridge/microwave/carpark/common-fee, plus up to 4 labeled "other" bills.
 - `/records.html` — view submitted records, filterable by **room** and an inclusive **from/to month range**.
   Click a **new meter reading** to view its photo, or the **Add.** amount to see the additional-bills breakdown.
 - `/users.html` — **User management** (Database 3, admin only): add/edit/delete login accounts (id, password, room, role, heading).
+- `/reservations.html` — **Reservation management** (Database 5, admin only): view reservations, view bank slips,
+  see the lookup key + status, **Verify** a reservation (Unverified → Verified), and delete.
 
 ## Calculation rules
 - Electric bill = (this-month meter − previous meter) × **8**

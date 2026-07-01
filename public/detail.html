@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dormitory Details</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/i18n.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+  <nav class="bg-slate-900 text-white">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/" class="font-semibold hover:underline">🏠 <span data-i18n="fp.title">Dormitory</span></a>
+      <div class="flex items-center gap-4 text-sm">
+        <a href="/" class="hover:underline text-slate-300" data-i18n="dt.home">← Back to home</a>
+        <button id="langToggle" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1">EN</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-4xl mx-auto px-4 py-10 space-y-6">
+    <h1 class="text-2xl font-bold" data-i18n="dt.title">Dormitory Details</h1>
+
+    <section class="bg-white rounded-2xl shadow-sm p-6">
+      <h2 class="text-lg font-semibold mb-2">🌊 <span data-i18n="dt.lakeview">Charal Prasit Lakeview</span></h2>
+      <p class="text-sm text-slate-400" data-i18n="dt.todo">Details will be added here later.</p>
+    </section>
+
+    <section class="bg-white rounded-2xl shadow-sm p-6">
+      <h2 class="text-lg font-semibold mb-2">🏡 <span data-i18n="dt.maemiw">Baan Mae Miw</span></h2>
+      <p class="text-sm text-slate-400" data-i18n="dt.todo">Details will be added here later.</p>
+    </section>
+  </main>
+</body>
+</html>
