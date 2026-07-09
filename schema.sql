@@ -31,7 +31,18 @@ CREATE TABLE IF NOT EXISTS app_users (
   password     TEXT NOT NULL,
   room_number  TEXT,                       -- NULL for admins; room no. for residents
   role         TEXT NOT NULL DEFAULT 'user', -- 'admin' sees DB1/DB2, 'user' sees only their room
-  heading      TEXT NOT NULL DEFAULT ''     -- shown top-left in the nav
+  heading      TEXT NOT NULL DEFAULT '',    -- shown top-left in the nav
+  -- Registration details (filled from a reservation via its ref_key, or manually)
+  reservation_id INTEGER,
+  branch        TEXT,
+  name          TEXT,
+  surname       TEXT,
+  telephone     TEXT,
+  home_address  TEXT,
+  line_id       TEXT,
+  date_of_entry DATE,
+  ref_key       TEXT,
+  validation    TEXT                        -- 'yes' if registered with a ref_key, else 'no'
 );
 
 -- Seed the three demo accounts (safe to re-run).

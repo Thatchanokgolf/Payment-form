@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registration</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/i18n.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+  <nav class="bg-slate-900 text-white">
+    <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/" class="font-semibold hover:underline">🏠 <span data-i18n="fp.title">Dormitory</span></a>
+      <div class="flex items-center gap-4 text-sm">
+        <a href="/login.html" class="hover:underline text-slate-300" data-i18n="reg.login_link">Already have an account? Log in</a>
+        <button id="langToggle" class="bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1">EN</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-2xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-1" data-i18n="reg.title">Registration</h1>
+    <p class="text-slate-500 text-sm mb-6" data-i18n="reg.subtitle">Enter your reservation reference key to auto-fill your details, or fill them in manually.</p>
+
+    <form id="regForm" class="bg-white rounded-xl shadow-sm p-5 grid sm:grid-cols-2 gap-4">
+      <!-- Reference key -->
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium mb-1" data-i18n="reg.ref_key">Reference key</label>
+        <div class="flex gap-2">
+          <input id="ref_key" maxlength="7"
+                 class="flex-1 border rounded-lg px-3 py-2 uppercase tracking-widest font-semibold" placeholder="ABCDEFG" />
+          <button type="button" id="loadBtn"
+                  class="bg-slate-200 hover:bg-slate-300 rounded-lg px-4 text-sm font-medium" data-i18n="reg.load">Load</button>
+        </div>
+        <p id="loadResult" class="text-xs mt-1"></p>
+        <p class="text-xs text-slate-400 mt-1" data-i18n="reg.ref_hint">From your reservation. Leave blank to register without one.</p>
+      </div>
+
+      <!-- Login credentials -->
+      <div>
+        <label class="block text-sm font-medium mb-1" data-i18n="reg.user_id">Username (for login)</label>
+        <input id="user_id" required class="w-full border rounded-lg px-3 py-2" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" data-i18n="reg.password">Password</label>
+        <input id="password" type="password" required class="w-full border rounded-lg px-3 py-2" />
+      </div>
+
+      <!-- Personal details -->
+      <div>
+        <label class="block text-sm font-medium mb-1" data-i18n="rsv.branch">Branch</label>
+        <select id="branch" class="w-full border rounded-lg px-3 py-2 bg-white">
+          <option value="" data-i18n="rsv.select_branch">Select a branch…</option>
+          <option value="Charal Prasit Lakeview">Charal Prasit Lakeview</option>
+          <option value="Baan Mae Miw">Baan Mae Miw</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" data-i18n="rsv.name">Name</label>
+        <input id="name" class="w-full border rounded-lg px-3 py-2" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" data-i18n="rsv.surname">Surname</label>
+        <input id="surname" class="w-full border rounded-lg px-3 py-2" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" data-i18n="rsv.tel">Telephone</label>
+        <input id="telephone" type="tel" class="w-full border rounded-lg px-3 py-2" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" data-i18n="rsv.line">Line ID</label>
+        <input id="line_id" class="w-full border rounded-lg px-3 py-2" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" data-i18n="rsv.entry">Date of entry</label>
+        <input id="date_of_entry" type="date" class="w-full border rounded-lg px-3 py-2" />
+      </div>
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium mb-1" data-i18n="rsv.address">Home address</label>
+        <textarea id="home_address" rows="2" class="w-full border rounded-lg px-3 py-2"></textarea>
+      </div>
+
+      <div class="sm:col-span-2 flex items-center gap-3">
+        <button class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-xl" data-i18n="reg.submit">Register</button>
+        <span id="status" class="text-sm"></span>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    // Load reservation details by reference key and auto-fill the form.
+    async function loadByKey() {
+      const key = $('ref_key').value.trim().toUpperCase();
+      $('loadResult').textContent = '';
+      if (!key) return;
+      try {
+        const res = await fetch('/api/register?key=' + encodeURIComponent(key));
+        const d = await res.json();
+        if (!d.found) {
+          $('loadResult').className = 'text-xs mt-1 text-amber-600';
+          $('loadResult').textContent = I18n.t('reg.not_found');
+          return;
+        }
+        $('branch').value = d.branch || '';
+        $('name').value = d.name || '';
+        $('surname').value = d.surname || '';
+        $('telephone').value = d.telephone || '';
+        $('line_id').value = d.line_id || '';
+        $('date_of_entry').value = d.date_of_entry || '';
+        $('home_address').value = d.home_address || '';
+        $('loadResult').className = 'text-xs mt-1 text-emerald-600';
+        $('loadResult').textContent = I18n.t('reg.loaded');
+      } catch (_) {
+        $('loadResult').className = 'text-xs mt-1 text-red-600';
+        $('loadResult').textContent = I18n.t('reg.not_found');
+      }
+    }
+    $('loadBtn').addEventListener('click', loadByKey);
+    $('ref_key').addEventListener('change', loadByKey);
+
+    $('regForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      $('status').textContent = I18n.t('reg.registering');
+      const payload = {
+        user_id: $('user_id').value.trim(),
+        password: $('password').value,
+        ref_key: $('ref_key').value.trim(),
+        branch: $('branch').value,
+        name: $('name').value.trim(),
+        surname: $('surname').value.trim(),
+        telephone: $('telephone').value.trim(),
+        home_address: $('home_address').value.trim(),
+        line_id: $('line_id').value.trim(),
+        date_of_entry: $('date_of_entry').value || null,
+      };
+      try {
+        const res = await fetch('/api/register', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data && data.ok) {
+          $('status').innerHTML = `<span class="text-emerald-600 font-medium">${I18n.t('reg.success')}</span>`;
+          $('regForm').reset();
+          $('loadResult').textContent = '';
+        } else if (data && data.taken) {
+          $('status').innerHTML = `<span class="text-red-600 font-medium">${I18n.t('reg.taken')}</span>`;
+        } else {
+          throw new Error((data && data.error) || 'Failed');
+        }
+      } catch (err) {
+        $('status').innerHTML = `<span class="text-red-600">${err.message}</span>`;
+      }
+    });
+  </script>
+</body>
+</html>

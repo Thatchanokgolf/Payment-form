@@ -35,6 +35,9 @@ direct access redirects them back). Log out via the button at the top right.
   against the external room DB before reserving; on success a random **7-letter key** is shown for status lookup.
   Saves to Database 5.
 - `/status.html` — **Check reservation status**: enter the 7-letter key to see Verified / Unverified.
+- `/register.html` — **Registration**: enter your reservation reference key to auto-fill your details
+  (or fill them manually) and create a login account. Writes to `app_users` with `validation='yes'`
+  when a valid key was used, else `'no'`.
 
 ### Internal (login required)
 - `/menu.html` — **Main menu** (post-login landing): Payment form, Repair form (external Google Form),

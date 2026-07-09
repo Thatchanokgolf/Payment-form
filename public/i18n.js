@@ -281,6 +281,23 @@
       'stat.Unverified': 'Unverified',
       'stat.Verified': 'Verified',
 
+      // registration
+      'reg.title': 'Registration',
+      'reg.subtitle': 'Enter your reservation reference key to auto-fill your details, or fill them in manually.',
+      'reg.ref_key': 'Reference key',
+      'reg.ref_hint': 'From your reservation. Leave blank to register without one.',
+      'reg.load': 'Load',
+      'reg.loaded': 'Reservation found — your details have been filled in.',
+      'reg.not_found': 'No reservation found for this key.',
+      'reg.user_id': 'Username (for login)',
+      'reg.password': 'Password',
+      'reg.submit': 'Register',
+      'reg.registering': 'Registering…',
+      'reg.success': 'Registration complete. You can now log in.',
+      'reg.taken': 'That username is already taken.',
+      'reg.login_link': 'Already have an account? Log in',
+      'reg.link': 'Register',
+
       // check reservation status page
       'st.title': 'Check Reservation Status',
       'st.subtitle': 'Enter your 7-letter reservation key.',
@@ -591,6 +608,23 @@
       // status values
       'stat.Unverified': 'ยังไม่ยืนยัน',
       'stat.Verified': 'ยืนยันแล้ว',
+
+      // registration
+      'reg.title': 'ลงทะเบียน',
+      'reg.subtitle': 'กรอกรหัสอ้างอิงการจองเพื่อกรอกข้อมูลอัตโนมัติ หรือกรอกข้อมูลด้วยตนเอง',
+      'reg.ref_key': 'รหัสอ้างอิง',
+      'reg.ref_hint': 'จากการจองของคุณ เว้นว่างได้หากไม่มีการจอง',
+      'reg.load': 'โหลด',
+      'reg.loaded': 'พบการจอง — กรอกข้อมูลของคุณให้แล้ว',
+      'reg.not_found': 'ไม่พบการจองสำหรับรหัสนี้',
+      'reg.user_id': 'ชื่อผู้ใช้ (สำหรับเข้าสู่ระบบ)',
+      'reg.password': 'รหัสผ่าน',
+      'reg.submit': 'ลงทะเบียน',
+      'reg.registering': 'กำลังลงทะเบียน…',
+      'reg.success': 'ลงทะเบียนสำเร็จ คุณสามารถเข้าสู่ระบบได้แล้ว',
+      'reg.taken': 'ชื่อผู้ใช้นี้ถูกใช้แล้ว',
+      'reg.login_link': 'มีบัญชีอยู่แล้ว? เข้าสู่ระบบ',
+      'reg.link': 'ลงทะเบียน',
 
       // check reservation status page
       'st.title': 'ตรวจสอบสถานะการจอง',

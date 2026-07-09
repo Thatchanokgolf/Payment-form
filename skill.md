@@ -57,6 +57,7 @@ dorm-rent-app/
 │   ├── detail.html         # PUBLIC dormitory details (blank, 2 branches)
 │   ├── reserve.html        # PUBLIC reservation form -> Database 5 (1-year term, all required)
 │   ├── status.html         # PUBLIC check reservation status by 7-letter key
+│   ├── register.html       # PUBLIC registration -> app_users (autofill from ref_key)
 │   ├── menu.html           # main menu (post-login landing): links to the forms
 │   ├── contract.html       # contract form (dates, PDF links, extend/terminate links)
 │   ├── contracts.html      # manage contracts (Database 4) — admin only
@@ -69,6 +70,7 @@ dorm-rent-app/
 │   └── users.html          # manage Database 3 (login accounts) — admin only
 ├── netlify/functions/
 │   ├── login.js            # verify credentials (Database 3) -> /api/login
+│   ├── register.js         # register account + autofill from reservation -> /api/register
 │   ├── users.js            # manage app_users (admin) -> /api/users
 │   ├── contracts.js        # contracts CRUD + extend (Database 4) -> /api/contracts
 │   ├── reservations.js     # reservations (Database 5) -> /api/reservations
